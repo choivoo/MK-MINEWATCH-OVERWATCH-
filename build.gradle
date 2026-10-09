@@ -52,3 +52,15 @@ test {
     useJUnitPlatform()
     jvmArgs "-Dfile.encoding=UTF-8", "-Dsun.jnu.encoding=UTF-8"
 }
+
+// Fabric 게임테스트: 실제 서버를 띄워 맵/봇/매치 로직을 검증한다. (gradlew runGametest)
+// 로컬 개발용 테스트 서버의 eula.txt 에 true 를 기록한다. 사용자가 명시적으로 허락함(2026-10-09).
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "minewatch-gametest"
+        enableGameTests = true
+        enableClientGameTests = false
+        eula = true
+    }
+}

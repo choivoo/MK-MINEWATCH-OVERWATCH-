@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "minewatch-gametest",
+  "version": "1.0.0",
+  "name": "MineWatch GameTests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": ["com.minewatch.test.MineWatchGameTests"]
+  },
+  "depends": {
+    "minewatch": "*"
+  }
+}
