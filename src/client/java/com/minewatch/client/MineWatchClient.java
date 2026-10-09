@@ -102,6 +102,7 @@ public class MineWatchClient implements ClientModInitializer {
             }
         }
         net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(com.minewatch.entity.ModEntities.BOT, com.minewatch.client.render.BotRenderer::new);
+        net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(com.minewatch.entity.ModEntities.FX, com.minewatch.client.render.FxRenderer::new);
         HudRenderCallback.EVENT.register(OverwatchHud::render);
         HudRenderCallback.EVENT.register(MatchHud::render);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.MatchPayload.ID, (p, ctx) -> MatchHud.match = p);

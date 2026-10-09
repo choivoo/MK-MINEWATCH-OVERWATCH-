@@ -27,7 +27,7 @@ public final class PulseBombs {
 
     private static final class Bomb {
         ServerWorld world; UUID owner; Vec3d pos, vel;
-        UUID stuckTo; Vec3d stuckOffset; boolean stuck; int fuse = FUSE_TICKS; int age;
+        com.minewatch.entity.FxEntity fx; UUID stuckTo; Vec3d stuckOffset; boolean stuck; int fuse = FUSE_TICKS; int age;
     }
     private static final List<Bomb> BOMBS = new ArrayList<>();
 
@@ -38,11 +38,12 @@ public final class PulseBombs {
         Vec3d look = p.getRotationVec(1f);
         b.pos = p.getEyePos().add(look.multiply(0.5));
         b.vel = look.multiply(SPEED).add(0, LIFT, 0);
+        b.fx = Fx.spawn(b.world, "bomb", b.pos, new Vec3d(0, 0, 1), 1f, 400);
         BOMBS.add(b);
         Sfx.at(p, "bomb_throw", 1f, 1f);
     }
 
-    public static void clear() { BOMBS.clear(); }
+    public static void clear() { for (Bomb b : BOMBS) if (b.fx != null) b.fx.discard(); BOMBS.clear(); }
 
     public static void tick() {
         BOMBS.removeIf(PulseBombs::tickBomb);
@@ -52,8 +53,9 @@ public final class PulseBombs {
     private static boolean tickBomb(Bomb b) {
         ServerPlayerEntity owner = b.world.getServer().getPlayerManager().getPlayer(b.owner);
         b.age++;
+        if (b.fx != null && !b.fx.isRemoved()) b.fx.refreshPositionAndAngles(b.pos.x, b.pos.y, b.pos.z, 0, 0);
         if (!b.stuck) {
-            if (b.age > 200) return true;
+            if (b.age > 200) { if (b.fx != null) b.fx.discard(); return true; }
             b.vel = b.vel.subtract(0, GRAVITY, 0);
             Vec3d next = b.pos.add(b.vel);
             // 적 충돌
@@ -68,7 +70,6 @@ public final class PulseBombs {
                     RaycastContext.FluidHandling.NONE, owner != null ? owner : null));
             if (hit.getType() != HitResult.Type.MISS) { stick(b, hit.getPos(), null); return false; }
             b.pos = next;
-            b.world.spawnParticles(ParticleTypes.GLOW, b.pos.x, b.pos.y, b.pos.z, 1, 0, 0, 0, 0);
             return false;
         }
         // 부착 중: 적이 움직이면 같이 움직임
@@ -77,7 +78,6 @@ public final class PulseBombs {
             if (e == null || !e.isAlive()) b.stuckTo = null; else b.pos = e.getPos().add(b.stuckOffset);
         }
         b.world.spawnParticles(ParticleTypes.ELECTRIC_SPARK, b.pos.x, b.pos.y, b.pos.z, 2, 0.1, 0.1, 0.1, 0.02);
-        b.world.spawnParticles(ParticleTypes.GLOW, b.pos.x, b.pos.y, b.pos.z, 1, 0.05, 0.05, 0.05, 0);
         if (b.fuse % 6 == 0) b.world.playSound(null, b.pos.x, b.pos.y, b.pos.z, SoundEvents.BLOCK_NOTE_BLOCK_BIT.value(), SoundCategory.PLAYERS, 1f, 2f);
         if (--b.fuse <= 0) { explode(b, owner); return true; }
         return false;
@@ -91,8 +91,9 @@ public final class PulseBombs {
 
     private static void explode(Bomb b, ServerPlayerEntity owner) {
         Vec3d c = b.pos;
-        b.world.spawnParticles(ParticleTypes.EXPLOSION_EMITTER, c.x, c.y, c.z, 1, 0, 0, 0, 0);
-        b.world.spawnParticles(ParticleTypes.END_ROD, c.x, c.y, c.z, 80, 1.5, 1.5, 1.5, 0.3);
+        if (b.fx != null) b.fx.discard();
+        Fx.spawn(b.world, "bomb_blast", c, new Vec3d(0, 0, 1), 1f, 15);
+        b.world.spawnParticles(ParticleTypes.END_ROD, c.x, c.y, c.z, 25, 1.5, 1.5, 1.5, 0.3);
         Sfx.at(b.world, c.x, c.y, c.z, "bomb_explode", 1.5f, 1f);
         if (owner == null) return;
         Box area = new Box(c, c).expand(RADIUS);

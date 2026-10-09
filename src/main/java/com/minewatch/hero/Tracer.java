@@ -136,16 +136,10 @@ public class Tracer extends Hero {
         // 총구 섬광 + 탄도 궤적
         Vec3d side = new Vec3d(-dir.z, 0, dir.x).normalize().multiply(s.rightHand ? 0.3 : -0.3);
         Vec3d muzzle = eye.add(dir.multiply(0.8)).add(side).add(0, -0.25, 0);
-        world.spawnParticles(ParticleTypes.END_ROD, muzzle.x, muzzle.y, muzzle.z, 1, 0, 0, 0, 0);
-        if (s.ammo % 2 == 0) {
-            double len = muzzle.distanceTo(impact);
-            for (double d = 1.5; d < len; d += 2.5) {
-                Vec3d pt = muzzle.add(impact.subtract(muzzle).normalize().multiply(d));
-                world.spawnParticles(ParticleTypes.ELECTRIC_SPARK, pt.x, pt.y, pt.z, 1, 0, 0, 0, 0);
-            }
-        }
+        com.minewatch.server.Fx.spawn(world, "muzzle", muzzle, dir, 1f, 3);
+        com.minewatch.server.Fx.bullet(world, muzzle, impact, "cyan");
         if (eh == null && blockHit.getType() != HitResult.Type.MISS)
-            world.spawnParticles(ParticleTypes.CRIT, impact.x, impact.y, impact.z, 1, 0.05, 0.05, 0.05, 0.02);
+            com.minewatch.server.Fx.spawn(world, "impact", impact, dir, 1f, 5);
     }
 
     /** 15m 까지 100%, 30m 에서 50% 까지 선형 감소. */
@@ -177,12 +171,14 @@ public class Tracer extends Hero {
             ox += dx * BLINK_STEP; oz += dz * BLINK_STEP; moved += BLINK_STEP;
         }
         s.blinkCharges--;
-        world.spawnParticles(ParticleTypes.REVERSE_PORTAL, start.x, start.y + 1, start.z, 25, 0.3, 0.6, 0.3, 0.1);
+        world.spawnParticles(ParticleTypes.REVERSE_PORTAL, start.x, start.y + 1, start.z, 12, 0.3, 0.6, 0.3, 0.1);
+        com.minewatch.server.Fx.spawn(world, "blink_flash", start.add(0, 1, 0), new Vec3d(0, 0, 1), 1f, 9);
         if (moved <= 0) return;
+        com.minewatch.server.Fx.spawn(world, "blink_trail", start.add(0, 1, 0), new Vec3d(dx, 0, dz), (float) moved, 10);
         p.networkHandler.requestTeleport(start.x + ox, start.y, start.z + oz, p.getYaw(), p.getPitch());
         p.setVelocity(p.getVelocity().multiply(0.2, 1, 0.2));
         p.velocityModified = true;
-        world.spawnParticles(ParticleTypes.ELECTRIC_SPARK, start.x + ox, start.y + 1, start.z + oz, 20, 0.3, 0.6, 0.3, 0.2);
+        com.minewatch.server.Fx.spawn(world, "blink_flash", start.add(ox, 1, oz), new Vec3d(0, 0, 1), 1f, 9);
         com.minewatch.server.Sfx.at(p, "blink", 0.8f, 1f);
     }
 
@@ -198,6 +194,7 @@ public class Tracer extends Hero {
         s.recallCooldown = (int) Math.round(RECALL_COOLDOWN / s.cdRate[1]);
         s.reloadTicks = 0;
         com.minewatch.server.Sfx.at(p, "recall_start", 1f, 1f);
+        com.minewatch.server.Fx.spawn(world, "recall_ring", s.recallOrigin, new Vec3d(0, 0, 1), 1f, 26);
     }
 
     private void tickRecall(ServerPlayerEntity p, TracerState s, ServerWorld world) {
@@ -222,7 +219,8 @@ public class Tracer extends Hero {
             s.recalling = false;
             p.setHealth(s.recallFullHeal ? p.getMaxHealth() : Math.max(p.getHealth(), s.recallHealth));
             s.ammo = MAX_AMMO;
-            world.spawnParticles(ParticleTypes.END_ROD, o.x, o.y + 1, o.z, 30, 0.1, 0.1, 0.1, 0.25);
+            com.minewatch.server.Fx.spawn(world, "recall_ring", p.getPos(), new Vec3d(0, 0, 1), 1f, 26);
+            world.spawnParticles(ParticleTypes.END_ROD, o.x, o.y + 1, o.z, 12, 0.1, 0.1, 0.1, 0.25);
             com.minewatch.server.Sfx.at(p, "recall_arrive", 1f, 1f);
         }
     }

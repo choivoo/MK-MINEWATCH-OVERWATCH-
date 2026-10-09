@@ -4,3 +4,7 @@ run/
 .idea/
 *.iml
 .vscode/
+build.log
+shots.log
+gt.log
+run/

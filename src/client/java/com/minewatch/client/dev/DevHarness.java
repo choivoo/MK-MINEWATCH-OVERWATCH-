@@ -72,7 +72,12 @@ public final class DevHarness {
             add(20, mc -> { mc.setScreen(null); });
             add(40, mc -> shot(mc, "01_lobby_auto"));
             add(10, mc -> mc.setScreen(new com.minewatch.client.screen.HomeScreen(null)));
-            add(20, mc -> shot(mc, "02_lobby"));
+            add(30, mc -> shot(mc, "02_lobby"));
+            add(5, mc -> mc.setScreen(new com.minewatch.client.screen.PlayScreen(null)));
+            add(10, mc -> shot(mc, "02_play"));
+            add(5, mc -> mc.setScreen(new com.minewatch.client.screen.PanelScreen(null, com.minewatch.client.screen.PanelScreen.Kind.SHOP)));
+            add(15, mc -> shot(mc, "02_shop"));
+            add(5, mc -> mc.setScreen(new com.minewatch.client.screen.HomeScreen(null)));
             // 영웅 선택: 영웅마다 3D 미리보기(스킨) 장면. 처음 한 장은 등장 섬광 직후에 찍는다.
             add(10, mc -> { var s = new HeroSelectScreen(null); mc.setScreen(s); s.devPreview("tracer"); });
             add(18, mc -> shot(mc, "03_pick_flash"));
@@ -113,6 +118,29 @@ public final class DevHarness {
                 add(8, mc -> shot(mc, "40_tracer_anim_" + a + "_b"));
                 add(30, mc -> {});
             }
+        }
+        if (wanted("fx")) {
+            add(90, mc -> server(mc, sp -> {
+                GameMaps.Def def = GameMaps.byId("plaza");
+                GameMaps.buildAndApply(sp.getServer().getOverworld(), def);
+                sp.teleport(sp.getServer().getOverworld(), def.baseX() + 0.5, GameMaps.FLOOR_Y, def.baseZ() - 10.5, 0f, 8f);
+                HeroManager.select(sp, HeroRegistry.TRACER);
+            }));
+            add(30, mc -> mc.options.setPerspective(Perspective.THIRD_PERSON_BACK));
+            for (String k : new String[]{"bullet_cyan", "bullet_gold", "muzzle", "impact", "blink_trail", "blink_flash", "recall_ring", "bomb", "bomb_blast"}) {
+                add(10, mc -> server(mc, sp -> {
+                    var look = sp.getRotationVec(1f);
+                    var at = sp.getPos().add(look.x * 4, 1.2, look.z * 4);
+                    float len = k.startsWith("blink_trail") ? 6f : k.startsWith("bullet") ? 2.5f : 1f;
+                    var d = k.startsWith("bullet") || k.equals("blink_trail") ? new net.minecraft.util.math.Vec3d(1, 0, 0) : new net.minecraft.util.math.Vec3d(0, 0, 1);
+                    if (k.equals("blink_trail")) at = at.add(-3, 0, 0);
+                    com.minewatch.server.Fx.spawn(sp.getServerWorld(), k, at.add(k.equals("recall_ring") || k.equals("bomb_blast") ? new net.minecraft.util.math.Vec3d(0, -1.2, 0) : net.minecraft.util.math.Vec3d.ZERO), d, len, 12);
+                }));
+                add(3, mc -> shot(mc, "50_fx_" + k + "_a"));
+                add(3, mc -> shot(mc, "50_fx_" + k + "_b"));
+                add(20, mc -> {});
+            }
+            add(5, mc -> mc.options.setPerspective(Perspective.FIRST_PERSON));
         }
         if (wanted("perk")) {
             add(5, mc -> server(mc, sp -> { HeroManager.select(sp, HeroRegistry.TRACER); HeroManager.stateOf(sp).perk.addXp(500); }));

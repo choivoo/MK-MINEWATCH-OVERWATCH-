@@ -34,6 +34,20 @@ class AssetsTest {
         }
     }
 
+    @Test void everyHeroHasSkin() {
+        for (String h : HEROES) assertTrue(exists("textures/skin/" + h + ".png"), "스킨 누락: " + h);
+    }
+
+    @Test void everyFxHasModelAnimationAndTexture() throws Exception {
+        for (String k : List.of("bullet", "muzzle", "impact", "blink_trail", "blink_flash", "recall_ring", "bomb", "bomb_blast")) {
+            assertTrue(exists("geo/fx/" + k + ".geo.json"), "fx geo 누락: " + k);
+            assertTrue(read("animations/fx/" + k + ".animation.json").contains("animation." + k + ".play"), "fx 애니메이션 이름: " + k);
+        }
+        for (String t : List.of("bullet_cyan", "bullet_gold", "bullet_orange", "bullet_green", "bullet_violet", "muzzle", "impact",
+                "blink_trail", "blink_flash", "recall_ring", "bomb", "bomb_blast"))
+            assertTrue(exists("textures/fx/" + t + ".png"), "fx 텍스처 누락: " + t);
+    }
+
     @Test void everyHeroHasBustPortrait() {
         for (String h : HEROES) assertTrue(exists("textures/gui/pick/roster_bust_" + h + ".png"), "초상화 없음: " + h);
     }

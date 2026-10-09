@@ -1,0 +1,13 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.bomb.play": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "orbit": {"rotation": {"0": [0, 0, 0], "1": [360, 360, 0]}},
+        "core": {"scale": {"0": [1, 1, 1], "0.25": [1.25, 1.25, 1.25], "0.5": [1, 1, 1], "0.75": [1.25, 1.25, 1.25], "1": [1, 1, 1]}}
+      }
+    }
+  }
+}

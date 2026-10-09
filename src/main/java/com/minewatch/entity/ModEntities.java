@@ -17,6 +17,13 @@ public final class ModEntities {
                     .trackRangeBlocks(96)
                     .build());
 
+    public static final EntityType<FxEntity> FX = Registry.register(Registries.ENTITY_TYPE,
+            Identifier.of("minewatch", "fx"),
+            FabricEntityTypeBuilder.<FxEntity>create(SpawnGroup.MISC, FxEntity::new)
+                    .dimensions(EntityDimensions.fixed(0.2f, 0.2f))
+                    .trackRangeBlocks(96).trackedUpdateRate(1).forceTrackedVelocityUpdates(true)
+                    .build());
+
     public static void init() {
         FabricDefaultAttributeRegistry.register(BOT, BotEntity.createAttributes());
     }

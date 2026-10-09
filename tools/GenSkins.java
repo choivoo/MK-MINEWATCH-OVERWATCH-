@@ -218,6 +218,261 @@ public class GenSkins {
         return s;
     }
 
+    // ---- 마무리: 면 음영 + 디더 질감 + 가장자리 어둡게(셀 셰이딩) ----
+    static int hash(int x, int y, int k) {
+        int h = x * 374761393 + y * 668265263 + k * 2147483647;
+        h = (h ^ (h >>> 13)) * 1274126177;
+        return (h ^ (h >>> 16)) & 0xFFFF;
+    }
+
+    static int mul(int rgb, double f) {
+        int r = Math.min(255, Math.max(0, (int) Math.round(((rgb >> 16) & 255) * f)));
+        int g = Math.min(255, Math.max(0, (int) Math.round(((rgb >> 8) & 255) * f)));
+        int b = Math.min(255, Math.max(0, (int) Math.round((rgb & 255) * f)));
+        return (r << 16) | (g << 8) | b;
+    }
+
+    /** 모든 부위의 모든 면에 위쪽은 밝게/아래쪽은 어둡게, 가장자리는 살짝 어둡게, 미세한 점 질감을 입힌다. */
+    static void shade(Skin s) {
+        int idx = 0;
+        for (var e : PART.entrySet()) {
+            idx++;
+            for (String f : new String[]{"top", "bottom", "right", "front", "left", "back"}) {
+                int[] r = face(e.getKey(), f);
+                double base = switch (f) { case "top" -> 1.10; case "bottom" -> 0.72; case "front" -> 1.0; case "back" -> 0.90; default -> 0.86; };
+                for (int y = 0; y < r[3]; y++) for (int x = 0; x < r[2]; x++) {
+                    int p = s.img.getRGB(r[0] + x, r[1] + y);
+                    if ((p >>> 24) == 0) continue;
+                    double g = base * (1.06 - 0.14 * y / Math.max(1, r[3] - 1));
+                    if (x == 0 || x == r[2] - 1) g *= 0.93;
+                    if (y == r[3] - 1 && !f.equals("top") && !f.equals("bottom")) g *= 0.94;
+                    g *= 1 + ((hash(x, y, idx * 7 + f.length()) % 1000) / 1000.0 - 0.5) * 0.07;
+                    s.px(r[0] + x, r[1] + y, mul(p & 0xFFFFFF, g));
+                }
+            }
+        }
+    }
+
+    /** 8열 문자 그림으로 한 면을 그린다. '.' 는 건드리지 않는다. */
+    static void paint(Skin s, String part, String face, String[] rows, Map<Character, Integer> pal) {
+        for (int y = 0; y < rows.length; y++) for (int x = 0; x < rows[y].length(); x++) {
+            char c = rows[y].charAt(x);
+            if (c != '.') { Integer col = pal.get(c); if (col != null) s.at(part, face, x, y, col); }
+        }
+    }
+
+    static Map<Character, Integer> pal(Object... kv) {
+        Map<Character, Integer> m = new HashMap<>();
+        for (int i = 0; i < kv.length; i += 2) m.put((Character) kv[i], (Integer) kv[i + 1]);
+        return m;
+    }
+
+    /** 영역을 곱셈 비율로 밝게/어둡게. */
+    static void tone(Skin s, String part, String f, int x, int y, int w, int h, double k) {
+        int[] r = face(part, f);
+        for (int j = 0; j < h; j++) for (int i = 0; i < w; i++) {
+            if (x + i < 0 || y + j < 0 || x + i >= r[2] || y + j >= r[3]) continue;
+            int p = s.img.getRGB(r[0] + x + i, r[1] + y + j);
+            if ((p >>> 24) != 0) s.px(r[0] + x + i, r[1] + y + j, mul(p & 0xFFFFFF, k));
+        }
+    }
+
+    static void toneAll(Skin s, String part, int x, int y, int w, int h, double k) {
+        for (String f : new String[]{"front", "back", "left", "right"}) tone(s, part, f, x, y, w, h, k);
+    }
+
+    static void dots(Skin s, String part, String f, int rgb, int... xy) { for (int i = 0; i < xy.length; i += 2) s.at(part, f, xy[i], xy[i + 1], rgb); }
+
+    static Skin make(String id) {
+        Skin s = switch (id) {
+            case "soldier76" -> soldier76(); case "widowmaker" -> widowmaker(); case "reinhardt" -> reinhardt();
+            case "roadhog" -> roadhog(); case "ana" -> ana(); default -> mercy();
+        };
+        shade(s);
+        switch (id) {
+            case "soldier76" -> touchSoldier(s); case "widowmaker" -> touchWidow(s); case "reinhardt" -> touchRein(s);
+            case "roadhog" -> touchHog(s); case "ana" -> touchAna(s); default -> touchMercy(s);
+        }
+        return s;
+    }
+
+    static void touchSoldier(Skin s) {
+        var p = pal('h', 0x5A4B3E, 'H', 0x7C6A58, 'g', 0x9C9C98, 's', 0xD9A27A, 'S', 0xC48C66, 'd', 0xA8704F, 'k', 0x17181C,
+                'v', 0xFF6B5E, 'r', 0xD22E2E, 'R', 0x8E1A1A, 'm', 0x8C4E3A, 'b', 0x5E4A3A, 'w', 0xF2F2F2);
+        paint(s, "head", "front", new String[]{
+            "hHhhHhhh",
+            "hggssggh",
+            "sbbssbbs",
+            "kkkkkkkk",
+            "kvvRRrrk",
+            "sSssddsS",
+            "sdsmmmsd",
+            "bbsssbbb"}, p);
+        paint(s, "head", "top", new String[]{"hhhhhhhh", "hHhhhhHh", "hhhHhhhh", "hhhhhhhh", "hHhhhhHh", "hhhhHhhh", "hhhhhhhh", "hhhhhhhh"}, p);
+        // 흰 어깨 줄, 가슴 패드, 탄창 파우치, 무릎 보호대
+        tone(s, "body", "front", 1, 1, 6, 5, 1.12); tone(s, "body", "front", 0, 6, 8, 1, 0.8);
+        s.sub("body", "front", 3, 1, 2, 1, 0xE6E6E6); s.col("body", "front", 3, 0x1B2F5E);
+        for (int i = 0; i < 3; i++) { s.sub("body", "front", i * 3, 9, 2, 3, 0x4C535F); s.sub("body", "front", i * 3, 9, 2, 1, 0x7B8492); }
+        dots(s, "body", "front", 0xD4A64A, 1, 7, 6, 7);
+        for (String a : new String[]{"rLeg", "lLeg", "rPants", "lPants"}) {
+            s.sub(a, "front", 0, 6, 4, 2, 0x2A2E37); s.row(a, "front", 6, 0x4B5260);
+            tone(s, a, "front", 0, 2, 4, 3, 0.9);
+        }
+        s.sub("rLeg", "front", 0, 2, 2, 3, 0x353B46); s.sub("rPants", "front", 0, 2, 2, 3, 0x353B46);
+        both(s, q -> { s.sub(q[1], "front", 0, 1, 4, 2, 0x2D5099); tone(s, q[1], "front", 1, 5, 2, 3, 0.85); });
+    }
+
+    static void touchWidow(Skin s) {
+        var p = pal('h', 0x1B1626, 'H', 0x2C2340, 's', 0x8F82CF, 'S', 0x7466B8, 'y', 0xFFD23F, 'k', 0x0C0912, 'l', 0xA99BEB, 'm', 0x3B2D78, 'p', 0x6C4BB8);
+        paint(s, "head", "front", new String[]{
+            "hHhhhhHh",
+            "hHhhhhHh",
+            "hSssssSh",
+            "hkyyskyh",
+            "hsskkssh",
+            "hSsllsSh",
+            "hsmmmmsh",
+            "hhsssshh"}, p);
+        tone(s, "body", "front", 0, 0, 8, 12, 0.95);
+        paint(s, "body", "front", new String[]{
+            "........",
+            "..pppp..",
+            "..pllp..",
+            "...pp...",
+            "..p..p..",
+            "........"}, pal('p', 0x7A58CC, 'l', 0xC9B8FF));
+        s.sub("body", "front", 0, 8, 8, 1, 0x7A58CC); s.sub("body", "front", 0, 9, 8, 1, 0x2A1E4A);
+        dots(s, "body", "front", 0xC9B8FF, 1, 8, 6, 8);
+        for (String a : new String[]{"rLeg", "lLeg", "rPants", "lPants"}) {
+            s.col(a, "front", 1, 0x3A2C66); s.col(a, "front", 2, 0x3A2C66); tone(s, a, "front", 0, 0, 4, 12, 1.0);
+            s.row(a, "front", 5, 0x7A58CC); s.row(a, "front", 6, 0x2A1E4A);
+        }
+        both(s, q -> { s.col(q[1], "front", 0, 0x3A2C66); s.sub(q[1], "front", 0, 1, 4, 1, 0x7A58CC); });
+    }
+
+    static void touchRein(Skin s) {
+        var p = pal('s', 0xD9A07A, 'S', 0xC28A66, 'w', 0xF1F1F1, 'W', 0xD9D9D9, 'b', 0x3A5F8A, 'B', 0x20405E, 'm', 0x9A5A48, 'x', 0xA84A3C, 'g', 0xDDDDDD);
+        paint(s, "head", "front", new String[]{
+            "........",
+            "sSssssSs",
+            "sWwssWws",
+            "sbBssbBs",
+            "ssSssSss",
+            "sxsSSsxs",
+            "wgmmmmgw",
+            "wwgwwgww"}, p);
+        // 흉갑 패널 + 리벳 + 금 테두리
+        for (String f : new String[]{"front", "back"}) {
+            tone(s, "body", f, 0, 0, 8, 12, 0.96); tone(s, "body", f, 1, 2, 6, 4, 1.15);
+            s.sub("body", f, 0, 6, 8, 1, 0x7A838F);
+            dots(s, "body", f, 0xF3F6FA, 1, 2, 6, 2, 1, 5, 6, 5);
+        }
+        s.sub("body", "front", 2, 2, 4, 3, 0xBFC8D3); s.sub("body", "front", 3, 3, 2, 2, 0xE8C453);
+        for (String a : new String[]{"rLeg", "lLeg", "rPants", "lPants"}) {
+            tone(s, a, "front", 0, 1, 4, 4, 1.1);
+            s.sub(a, "front", 0, 5, 4, 2, 0xC9A62E); s.row(a, "front", 7, 0x7E6718); dots(s, a, "front", 0xFFE08A, 0, 5, 3, 5);
+        }
+        both(s, q -> {
+            s.sub(q[1], "front", 0, 0, 4, 4, 0xB4BDC8); s.sub(q[1], "front", 0, 3, 4, 1, 0x7A838F);
+            dots(s, q[1], "front", 0xF3F6FA, 0, 0, 3, 0, 0, 2, 3, 2);
+            s.row(q[1], "front", 0, 0xD4AF37);
+        });
+    }
+
+    static void touchHog(Skin s) {
+        var p = pal('s', 0xD9A27A, 'S', 0xC48C66, 'd', 0xA8704F, 'w', 0xF0F0F0, 'W', 0xBDBDBD, 'k', 0x0E0E10, 'g', 0x9AA3AD, 'm', 0x7A4A3A);
+        paint(s, "head", "front", new String[]{
+            "ssssssss",
+            "sSssssSs",
+            "sdsssdss",
+            "ssSssSss",
+            "ssssssss",
+            "sssddsss",
+            "ssmmmmss",
+            "sSsssSss"}, p);
+        // 마스크(모자 층): 흰 철제 + 검은 눈구멍 + 환기구
+        s.clearHat();
+        paint(s, "hat", "front", new String[]{
+            "........",
+            "........",
+            "WwwwwwwW",
+            "wkkwwkkw",
+            "wkkwwkkw",
+            "wwwggwww",
+            "WwgkkgwW",
+            "WwgkkgwW"}, p);
+        s.sub("hat", "left", 3, 2, 5, 6, 0xE4E4E4); s.sub("hat", "right", 0, 2, 5, 6, 0xE4E4E4); s.sub("hat", "back", 0, 2, 8, 2, 0xD6D6D6);
+        dots(s, "hat", "front", 0x7A7A7A, 0, 2, 7, 2, 0, 7, 7, 7);
+        tone(s, "head", "top", 0, 0, 8, 8, 0.9);
+        // 배: 살색 + 흉터 + 가죽 끈 + 체인
+        for (String f : new String[]{"front"}) {
+            tone(s, "body", f, 2, 4, 4, 5, 1.12);
+            s.sub("body", f, 3, 6, 2, 1, 0xA8704F); s.at("body", f, 4, 8, 0x8C5A44);
+        }
+        for (int i = 0; i < 6; i++) { s.at("body", "front", 1 + i, 1 + i, 0xA8B0BA); s.at("body", "front", 1 + i, 2 + i, 0x5E656E); }
+        s.sub("body", "front", 3, 9, 2, 2, 0xC9A62E);
+        both(s, q -> {
+            tone(s, q[0], "front", 0, 0, 4, 9, 1.0);
+            s.sub(q[0], "front", 1, 4, 2, 1, 0x7B4A3A); s.sub(q[0], "front", 1, 6, 2, 1, 0x7B4A3A);
+            s.sub(q[1], "front", 0, 8, 4, 1, 0x3A3A3A);
+        });
+        for (String a : new String[]{"rLeg", "lLeg", "rPants", "lPants"}) {
+            s.sub(a, "front", 0, 6, 4, 1, 0x2B2B2B); dots(s, a, "front", 0x6B7A4C, 1, 2, 2, 3);
+            tone(s, a, "front", 0, 7, 4, 2, 0.85);
+        }
+    }
+
+    static void touchAna(Skin s) {
+        var p = pal('s', 0xB07A55, 'S', 0x9A6844, 'd', 0x1B1A22, 'w', 0xF2F2F2, 'b', 0x3A6EC8, 'k', 0x15141A, 'c', 0x2F5DA8, 'C', 0x244A88, 'l', 0xDADDE6, 'm', 0x7A4A3A);
+        paint(s, "head", "front", new String[]{
+            "dddddddd",
+            "dsssssss",
+            "sSssssSs",
+            "swkssbks",
+            "ssSssbss",
+            "sssSSbss",
+            "ssmmmmss",
+            "sSsssSss"}, p);
+        // 스카프(모자 층) 가장자리 장식
+        s.sub("hat", "front", 0, 0, 8, 2, 0x2F5DA8); s.row("hat", "front", 2, 0xDADDE6);
+        dots(s, "hat", "front", 0x6EA8E8, 1, 1, 3, 1, 5, 1);
+        for (String f : new String[]{"left", "right", "back"}) s.row("hat", f, 5, 0xDADDE6);
+        // 상의: 파란 장식 띠 + 가죽 어깨끈 + 금 버클
+        for (String f : new String[]{"front", "back"}) { tone(s, "body", f, 0, 0, 8, 12, 0.97); s.row("body", f, 6, 0x244A88); }
+        for (int i = 0; i < 6; i++) { s.at("body", "front", 1 + i, 1 + i, 0x7A5A38); s.at("body", "front", 2 + i, 1 + i, 0x9A7B55); }
+        s.sub("body", "front", 3, 9, 2, 1, 0xD4AF37);
+        for (int i = 0; i < 8; i += 2) { s.at("body", "front", i, 11, 0x6EA8E8); s.at("body", "back", i, 11, 0x6EA8E8); }
+        both(s, q -> { s.row(q[1], "front", 4, 0x6EA8E8); dots(s, q[1], "front", 0xDADDE6, 0, 4, 2, 4); });
+        for (String a : new String[]{"rLeg", "lLeg", "rPants", "lPants"}) {
+            s.row(a, "front", 6, 0x6EA8E8); tone(s, a, "front", 0, 7, 4, 2, 0.9); dots(s, a, "front", 0xDADDE6, 0, 5, 2, 5);
+        }
+    }
+
+    static void touchMercy(Skin s) {
+        var p = pal('s', 0xF2C7A5, 'S', 0xE0AE8A, 'y', 0xF2D06B, 'Y', 0xFFE79A, 'o', 0xD6B24C, 'b', 0x4A7FD6, 'w', 0xFFFFFF, 'p', 0xD98A8A, 'e', 0xC77C60);
+        paint(s, "head", "front", new String[]{
+            "YyyyyyyY",
+            "yyYyyYyy",
+            "ysSssSsy",
+            "ywbsswby",
+            "ysssssSy",
+            "ysSppsSy",
+            "ysspppsy",
+            "oyssssyo"}, p);
+        // 흰 슈트 + 금 갑옷 + 가슴 푸른 빛
+        for (String f : new String[]{"front", "back"}) { tone(s, "body", f, 0, 0, 8, 12, 0.97); s.sub("body", f, 0, 6, 8, 1, 0xD6D6D6); }
+        s.sub("body", "front", 2, 1, 4, 3, 0xE9C34E); s.sub("body", "front", 3, 2, 2, 1, 0x7FD6FF); s.at("body", "front", 3, 2, 0xE9FBFF);
+        s.sub("body", "back", 1, 1, 6, 5, 0xE9C34E); s.sub("body", "back", 3, 2, 2, 3, 0xFFF0B0);
+        dots(s, "body", "front", 0xFFF0B0, 2, 1, 5, 1);
+        both(s, q -> { s.sub(q[1], "front", 0, 0, 4, 3, 0xE9C34E); s.row(q[1], "front", 0, 0xFFF0B0); });
+        for (String a : new String[]{"rLeg", "lLeg", "rPants", "lPants"}) {
+            s.sub(a, "front", 0, 3, 4, 2, 0xE9C34E); s.row(a, "front", 3, 0xFFF0B0);
+            s.sub(a, "front", 0, 9, 4, 3, 0xD6B24C); s.row(a, "front", 9, 0xFFE79A);
+        }
+        // 포니테일(모자 층 뒤)
+        s.sub("hat", "back", 2, 1, 4, 7, 0xF2D06B); s.sub("hat", "back", 3, 2, 2, 6, 0xFFE79A);
+    }
+
     // ---- 3D 머리/어깨 렌더러(얼굴 샷) ----
     static double DY = 0;                 // 화면 세로 이동(프레임 기준 픽셀)
 
@@ -322,9 +577,9 @@ public class GenSkins {
         switch (a[0]) {
             case "skins" -> {
                 Path out = Path.of(a[1]);
-                save(soldier76().img, out.resolve("soldier76.png")); save(widowmaker().img, out.resolve("widowmaker.png"));
-                save(reinhardt().img, out.resolve("reinhardt.png")); save(roadhog().img, out.resolve("roadhog.png"));
-                save(ana().img, out.resolve("ana.png")); save(mercy().img, out.resolve("mercy.png"));
+                save(make("soldier76").img, out.resolve("soldier76.png")); save(make("widowmaker").img, out.resolve("widowmaker.png"));
+                save(make("reinhardt").img, out.resolve("reinhardt.png")); save(make("roadhog").img, out.resolve("roadhog.png"));
+                save(make("ana").img, out.resolve("ana.png")); save(make("mercy").img, out.resolve("mercy.png"));
                 System.out.println("skins generated");
             }
             case "busts" -> {

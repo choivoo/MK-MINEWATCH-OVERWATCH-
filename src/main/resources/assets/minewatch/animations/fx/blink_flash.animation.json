@@ -1,0 +1,13 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.blink_flash.play": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.4,
+      "bones": {
+        "ghost": {"scale": {"0": [1, 1, 1], "0.12": [0.8, 1.15, 0.8], "0.4": [0, 1.5, 0]}, "rotation": {"0": [0, 0, 0], "0.4": [0, 120, 0]}},
+        "ring": {"scale": {"0": [0.3, 1, 0.3], "0.4": [1.6, 1, 1.6]}}
+      }
+    }
+  }
+}

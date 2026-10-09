@@ -1,0 +1,14 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.bomb_blast.play": {
+      "loop": "hold_on_last_frame",
+      "animation_length": 0.7,
+      "bones": {
+        "shell": {"scale": {"0": [1, 1, 1], "0.18": [12, 12, 12], "0.7": [16, 16, 16]}, "rotation": {"0": [0, 0, 0], "0.7": [0, 180, 0]}},
+        "inner": {"scale": {"0": [1, 1, 1], "0.15": [9, 9, 9], "0.4": [0, 0, 0]}},
+        "wave": {"scale": {"0": [1, 1, 1], "0.5": [16, 1, 16], "0.7": [0, 1, 0]}}
+      }
+    }
+  }
+}

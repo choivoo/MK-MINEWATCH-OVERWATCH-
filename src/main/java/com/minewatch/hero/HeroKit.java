@@ -159,14 +159,9 @@ public final class HeroKit {
 
     // ---- 연출 ----
 
+    /** 총구에서 목표까지 날아가는 빛줄기(블록벤치 키프레임 연출). 색은 가장 가까운 총알 색으로 바꾼다. */
     public static void beam(ServerWorld w, Vec3d from, Vec3d to, float r, float g, float b, float size) {
-        DustParticleEffect fx = new DustParticleEffect(new Vector3f(r, g, b), size);
-        Vec3d d = to.subtract(from);
-        int n = (int) Math.min(48, Math.max(2, d.length() * 2));
-        for (int i = 1; i <= n; i++) {
-            Vec3d pt = from.add(d.multiply(i / (double) n));
-            w.spawnParticles(fx, pt.x, pt.y, pt.z, 1, 0, 0, 0, 0);
-        }
+        com.minewatch.server.Fx.bullet(w, from, to, com.minewatch.server.Fx.colorName(r, g, b));
     }
 
     /** 히트스캔 한 발: 대상에게 피해를 주고 궁극기를 충전한다. 맞춘 대상을 반환(없으면 null). */
