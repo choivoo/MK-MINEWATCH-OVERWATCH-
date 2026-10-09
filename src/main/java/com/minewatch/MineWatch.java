@@ -1,21 +1,27 @@
 package com.minewatch;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
-
-import com.minewatch.hero.Hero;
 import com.minewatch.hero.HeroRegistry;
-import com.minewatch.hero.Tracer;
-import com.minewatch.hero.TracerState;
+import com.minewatch.net.DamageDirPayload;
+import com.minewatch.net.HitPayload;
 import com.minewatch.net.InputPayload;
+import com.minewatch.net.KillFeedPayload;
+import com.minewatch.net.MatchPayload;
+import com.minewatch.net.PartyActionPayload;
+import com.minewatch.net.PoolsPayload;
+import com.minewatch.net.SelectHeroPayload;
 import com.minewatch.net.StatePayload;
+import com.minewatch.server.Commands;
+import com.minewatch.server.HealthPacks;
 import com.minewatch.server.HeroManager;
+import com.minewatch.server.MapData;
 import com.minewatch.server.MatchManager;
+import com.minewatch.server.PartyActions;
 import com.minewatch.server.PulseBombs;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -30,71 +36,57 @@ public class MineWatch implements ModInitializer {
     public void onInitialize() {
         ModItems.init();
         HeroRegistry.init();
-
-        PayloadTypeRegistry.playC2S().register(InputPayload.ID, InputPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(StatePayload.ID, StatePayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(com.minewatch.net.SelectHeroPayload.ID, com.minewatch.net.SelectHeroPayload.CODEC);
-        // TODO(M2): 매치 상태가 '대기/스폰 중'일 때만 변경 허용
-        ServerPlayNetworking.registerGlobalReceiver(com.minewatch.net.SelectHeroPayload.ID,
-                (payload, ctx) -> {
-                    if (!MatchManager.canChangeHero()) { ctx.player().sendMessage(Text.literal("매치 진행 중에는 영웅을 바꿀 수 없습니다."), true); return; }
-                    HeroManager.select(ctx.player(), HeroRegistry.get(payload.heroId()));
-                });
-        PayloadTypeRegistry.playS2C().register(com.minewatch.net.MatchPayload.ID, com.minewatch.net.MatchPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(com.minewatch.net.KillFeedPayload.ID, com.minewatch.net.KillFeedPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(com.minewatch.net.PoolsPayload.ID, com.minewatch.net.PoolsPayload.CODEC);
-        ServerPlayNetworking.registerGlobalReceiver(InputPayload.ID,
-                (payload, ctx) -> HeroManager.setInput(ctx.player(), payload));
+        registerNetworking();
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             HeroManager.tickAll(server.getPlayerManager().getPlayerList());
             PulseBombs.tick();
             MatchManager.tick(server);
-            com.minewatch.server.HealthPacks.tick(server);
+            HealthPacks.tick(server);
         });
+        ServerLifecycleEvents.SERVER_STARTED.register(MapData::load);
         ServerPlayConnectionEvents.DISCONNECT.register((h, s) -> { HeroManager.remove(h.player); MatchManager.onLeave(h.player); });
         ServerPlayConnectionEvents.JOIN.register((h, sender, s) -> MatchManager.onJoin(h.player));
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldP, newP, alive) -> {
+            HeroManager.onRespawn(newP);
+            MatchManager.onRespawn(newP);
+        });
         ServerLivingEntityEvents.AFTER_DEATH.register((e, src) -> { if (e instanceof ServerPlayerEntity p) MatchManager.onDeath(p, src); });
-        // 같은 팀 아군 피해 차단
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) ->
-                !(e instanceof ServerPlayerEntity v && src.getAttacker() instanceof ServerPlayerEntity a && a != v && MatchManager.sameTeam(a, v)));
         ServerLifecycleCleanup.register();
 
-        // 리콜 중에는 모든 피해에 무적
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
-            if (entity instanceof ServerPlayerEntity p && HeroManager.heroOf(p) instanceof Tracer
-                    && ((TracerState) HeroManager.stateOf(p)).recalling) return false;
-            return true;
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> {
+            if (!(e instanceof ServerPlayerEntity v)) return true;
+            // 같은 팀 아군 피해 차단
+            if (src.getAttacker() instanceof ServerPlayerEntity a && a != v && MatchManager.sameTeam(a, v)) return false;
+            // 리콜 등 무적 상태
+            var hs = HeroManager.stateOf(v);
+            return hs == null || !hs.invulnerable();
         });
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, access, env) -> dispatcher.register(
-                literal("minewatch").then(literal("healthpack").requires(s -> s.hasPermissionLevel(2))
-                        .then(literal("large").executes(c -> { var s = c.getSource(); com.minewatch.server.HealthPacks.place(s.getWorld(), s.getPosition(), true); return 1; }))
-                        .then(literal("small").executes(c -> { var s = c.getSource(); com.minewatch.server.HealthPacks.place(s.getWorld(), s.getPosition(), false); return 1; }))
-                        .then(literal("clear").executes(c -> com.minewatch.server.HealthPacks.removeAll())))
-                .then(literal("match").requires(s -> s.hasPermissionLevel(2))
-                        .then(literal("stop").executes(c -> { MatchManager.stop(c.getSource().getServer()); return 1; }))
-                        .then(literal("start").executes(c -> { MatchManager.start(c.getSource().getServer(), 20, 300); return 1; })
-                                .then(argument("kills", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 200)).executes(c -> {
-                                    MatchManager.start(c.getSource().getServer(), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "kills"), 300); return 1; }))))));
-        CommandRegistrationCallback.EVENT.register((dispatcher, access, env) -> dispatcher.register(
-                literal("minewatch").then(literal("hero")
-                        .then(literal("none").executes(c -> {
-                            ServerPlayerEntity p = c.getSource().getPlayerOrThrow();
-                            HeroManager.select(p, null);
-                            c.getSource().sendFeedback(() -> Text.literal("영웅 선택을 해제했습니다."), false);
-                            return 1;
-                        }))
-                        .then(argument("hero", StringArgumentType.word()).suggests((c, b) -> {
-                            HeroRegistry.ids().forEach(b::suggest);
-                            return b.buildFuture();
-                        }).executes(c -> {
-                            ServerPlayerEntity p = c.getSource().getPlayerOrThrow();
-                            Hero h = HeroRegistry.get(StringArgumentType.getString(c, "hero"));
-                            if (h == null) { c.getSource().sendError(Text.literal("알 수 없는 영웅입니다.")); return 0; }
-                            HeroManager.select(p, h);
-                            c.getSource().sendFeedback(() -> Text.literal("영웅 선택: " + h.id), false);
-                            return 1;
-                        })))));
+        CommandRegistrationCallback.EVENT.register((dispatcher, access, env) -> Commands.register(dispatcher));
+    }
+
+    private static void registerNetworking() {
+        PayloadTypeRegistry.playC2S().register(InputPayload.ID, InputPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(SelectHeroPayload.ID, SelectHeroPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(PartyActionPayload.ID, PartyActionPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(StatePayload.ID, StatePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(MatchPayload.ID, MatchPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(KillFeedPayload.ID, KillFeedPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(PoolsPayload.ID, PoolsPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(HitPayload.ID, HitPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(DamageDirPayload.ID, DamageDirPayload.CODEC);
+
+        ServerPlayNetworking.registerGlobalReceiver(InputPayload.ID,
+                (payload, ctx) -> HeroManager.setInput(ctx.player(), payload));
+        ServerPlayNetworking.registerGlobalReceiver(SelectHeroPayload.ID, (payload, ctx) -> {
+            if (!MatchManager.canChangeHero()) {
+                ctx.player().sendMessage(Text.literal("매치 진행 중에는 영웅을 바꿀 수 없습니다."), true);
+                return;
+            }
+            HeroManager.select(ctx.player(), HeroRegistry.get(payload.heroId()));
+        });
+        ServerPlayNetworking.registerGlobalReceiver(PartyActionPayload.ID,
+                (payload, ctx) -> PartyActions.handle(ctx.player(), payload));
     }
 }

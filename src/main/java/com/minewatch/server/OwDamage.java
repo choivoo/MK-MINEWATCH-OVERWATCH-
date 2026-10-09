@@ -2,6 +2,9 @@ package com.minewatch.server;
 
 import com.minewatch.hero.Hero;
 import com.minewatch.hero.HeroState;
+import com.minewatch.net.DamageDirPayload;
+import com.minewatch.net.HitPayload;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -43,8 +46,13 @@ public final class OwDamage {
         }
         double dealt = absorbed + toHealth;
         if (dealt > 0) {
-            if (headshot) attacker.playSoundToPlayer(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.4f, 1.6f);
+            boolean kill = !target.isAlive();
+            ServerPlayNetworking.send(attacker, new HitPayload(kill ? 2 : headshot ? 1 : 0));
+            if (kill) attacker.playSoundToPlayer(SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.5f, 0.6f);
+            else if (headshot) attacker.playSoundToPlayer(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.4f, 1.6f);
             else if (attacker.age % 3 == 0) attacker.playSoundToPlayer(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.25f, 1.0f);
+            if (target instanceof ServerPlayerEntity tp && tp != attacker)
+                ServerPlayNetworking.send(tp, new DamageDirPayload(attacker.getX(), attacker.getZ()));
         }
         return dealt;
     }

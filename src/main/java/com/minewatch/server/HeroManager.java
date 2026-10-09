@@ -51,6 +51,12 @@ public final class HeroManager {
         hero.onSelect(p, e.state);
     }
 
+    /** 리스폰 후 새 플레이어 엔티티에 영웅 체력 설정을 다시 적용한다. */
+    public static void onRespawn(ServerPlayerEntity p) {
+        Entry e = ENTRIES.get(p.getUuid());
+        if (e != null) setMaxHealth(p, e.hero.maxHealthOw() / Hero.HP_SCALE);
+    }
+
     public static void remove(ServerPlayerEntity p) { ENTRIES.remove(p.getUuid()); }
     public static void clear() { ENTRIES.clear(); }
 
@@ -69,6 +75,7 @@ public final class HeroManager {
                 e.state.ultReady = false;
                 continue;
             }
+            if (MatchManager.inputLocked(p)) e.state.input = com.minewatch.net.InputPayload.EMPTY;
             e.state.pools.tick();
             e.hero.tick(p, e.state);
             e.state.prevInput = e.state.input;

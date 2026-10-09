@@ -24,6 +24,9 @@ public class InGameHudMixin {
     @Inject(method = "renderExperienceLevel", at = @At("HEAD"), cancellable = true)
     private void mw$xpLevel(CallbackInfo ci) { if (mw$hide()) ci.cancel(); }
 
+    @Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
+    private void mw$crosshair(CallbackInfo ci) { if (mw$hide()) ci.cancel(); }
+
     @Inject(method = "renderHotbar", at = @At("HEAD"), cancellable = true)
     private void mw$hotbar(CallbackInfo ci) { if (mw$hide()) ci.cancel(); }
 }

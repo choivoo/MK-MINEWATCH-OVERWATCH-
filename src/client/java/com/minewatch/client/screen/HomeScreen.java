@@ -22,9 +22,12 @@ public class HomeScreen extends Screen {
                 b -> client.setScreen(new HeroSelectScreen(this))).dimensions(x, y, 200, 24).build());
         String[] modes = {"ai", "party", "online"};
         for (int i = 0; i < modes.length; i++) {
-            addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.mode." + modes[i]), b -> {})
+            boolean party = modes[i].equals("party");
+            var btn = addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.mode." + modes[i]),
+                            b -> { if (party) client.setScreen(new PartyScreen(this)); })
                     .dimensions(x, y + 30 * (i + 1), 200, 24)
-                    .tooltip(Tooltip.of(Text.translatable("screen.minewatch.coming_soon"))).build()).active = false;
+                    .tooltip(party ? null : Tooltip.of(Text.translatable("screen.minewatch.coming_soon"))).build());
+            btn.active = party;
         }
         addDrawableChild(ButtonWidget.builder(Text.translatable("gui.back"), b -> close())
                 .dimensions(x, y + 140, 200, 20).build());

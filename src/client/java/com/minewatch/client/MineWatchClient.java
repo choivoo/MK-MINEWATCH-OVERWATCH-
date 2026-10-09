@@ -37,7 +37,7 @@ public class MineWatchClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(StatePayload.ID, (payload, ctx) -> state = payload);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.PoolsPayload.ID, (payload, ctx) -> pools = payload);
-        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; pools = com.minewatch.net.PoolsPayload.NONE; MatchHud.reset(); });
+        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; pools = com.minewatch.net.PoolsPayload.NONE; MatchHud.reset(); HudEffects.reset(); });
 
         // 영웅 활성 중에는 기본 조작(웅크리기/버리기)과 충돌하지 않도록 먼저 소비
         ClientTickEvents.START_CLIENT_TICK.register(mc -> {
@@ -79,6 +79,8 @@ public class MineWatchClient implements ClientModInitializer {
         HudRenderCallback.EVENT.register(MatchHud::render);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.MatchPayload.ID, (p, ctx) -> MatchHud.match = p);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.KillFeedPayload.ID, (p, ctx) -> MatchHud.addKill(p));
+        ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.HitPayload.ID, (p, ctx) -> HudEffects.onHit(p.kind()));
+        ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.DamageDirPayload.ID, (p, ctx) -> HudEffects.onDamage(p.x(), p.z()));
 
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
             while (MENU.wasPressed()) if (mc.currentScreen == null) mc.setScreen(new com.minewatch.client.screen.HomeScreen(null));

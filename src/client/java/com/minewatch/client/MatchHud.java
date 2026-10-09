@@ -47,6 +47,17 @@ final class MatchHud {
                 default -> "목표 " + m.target() + "킬";
             };
             g.drawCenteredTextWithShadow(tr, label, w / 2, 27, 0xFFFFFFFF);
+
+            if (m.mode() == 1) {   // 점령전: 점령지 상태 바
+                int bx = w / 2 - 40, by = 40;
+                g.fill(bx - 1, by - 1, bx + 81, by + 7, DARK);
+                int ownerCol = m.pointOwner() < 0 ? 0xFF8899AA : color(m.pointOwner(), mine);
+                g.fill(bx, by, bx + 80, by + 6, (ownerCol & 0x00FFFFFF) | 0x66000000);
+                if (m.pointCapTeam() >= 0 && m.pointProgress() > 0)
+                    g.fill(bx, by, bx + Math.round(80 * m.pointProgress() / 100f), by + 6, color(m.pointCapTeam(), mine));
+                String pt = m.pointOwner() < 0 ? "점령지: 중립" : (m.pointOwner() == mine ? "점령지: 아군" : "점령지: 적군");
+                g.drawCenteredTextWithShadow(tr, pt, w / 2, by + 9, 0xFFFFFFFF);
+            }
         }
 
         long now = System.currentTimeMillis();

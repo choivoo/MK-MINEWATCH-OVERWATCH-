@@ -8,37 +8,67 @@ import java.util.Map;
 import java.util.UUID;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import org.joml.Vector3f;
 
-/** 서버당 하나의 팀 데스매치. 상태: 대기 -> 카운트다운 -> 진행 -> 종료. */
+/** 서버당 하나의 매치. 모드: 팀 데스매치 / 점령. 상태: 대기 -> 카운트다운 -> 진행 -> 종료. */
 public final class MatchManager {
     public static final int NONE = 0, COUNTDOWN = 1, LIVE = 2, ENDED = 3;
-    public static final int COUNTDOWN_TICKS = 200, ENDED_TICKS = 200;
+    public static final int MODE_TDM = 0, MODE_CONTROL = 1;
+    public static final int COUNTDOWN_TICKS = 200, ENDED_TICKS = 200, CAPTURE_TICKS = 100;
 
-    private static int state = NONE;
+    private static int state = NONE, mode = MODE_TDM;
     private static int ticksLeft, target, timeLimit;
     private static final int[] score = new int[2];
     private static final Map<UUID, Integer> teams = new HashMap<>();
+    /** 플레이어가 고른 팀 선호(0 A, 1 B). 없으면 자동 배정. */
+    private static final Map<UUID, Integer> prefs = new HashMap<>();
+
+    // 점령지 상태
+    private static int pointOwner = -1, pointCap = -1, pointProgress = 0;
 
     public static int state() { return state; }
     public static boolean active() { return state != NONE; }
     /** 영웅 변경은 매치가 진행(LIVE) 중이 아닐 때만 허용. */
     public static boolean canChangeHero() { return state != LIVE; }
+    /** 카운트다운/종료 중에는 매치 참가자의 영웅 입력을 막는다. */
+    public static boolean inputLocked(ServerPlayerEntity p) {
+        return (state == COUNTDOWN || state == ENDED) && teamOf(p) >= 0;
+    }
     public static int teamOf(ServerPlayerEntity p) { return teams.getOrDefault(p.getUuid(), -1); }
     public static boolean sameTeam(ServerPlayerEntity a, ServerPlayerEntity b) {
         int ta = teamOf(a);
         return ta >= 0 && ta == teamOf(b);
     }
 
-    public static void start(MinecraftServer server, int targetKills, int seconds) {
+    public static void setPreference(ServerPlayerEntity p, int team) {
+        if (team < 0) prefs.remove(p.getUuid()); else prefs.put(p.getUuid(), team);
+        p.sendMessage(Text.literal("팀 선호: " + (team < 0 ? "자동" : team == 0 ? "A팀" : "B팀")), false);
+    }
+
+    /** 매치를 시작한다. 실패하면 사유를 반환, 성공하면 null. */
+    public static String start(MinecraftServer server, int newMode, int targetValue, int seconds) {
+        MapData map = MapData.get();
+        if (newMode == MODE_CONTROL && !map.hasPoint()) return "점령지가 없습니다. 아레나를 먼저 만드세요.";
+        mode = newMode == MODE_CONTROL ? MODE_CONTROL : MODE_TDM;
         score[0] = score[1] = 0;
-        target = targetKills; timeLimit = seconds * 20;
+        pointOwner = -1; pointCap = -1; pointProgress = 0;
+        target = targetValue; timeLimit = seconds * 20;
         teams.clear();
-        for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) assign(p);
+        List<ServerPlayerEntity> list = server.getPlayerManager().getPlayerList();
+        for (ServerPlayerEntity p : list) assign(p);
         state = COUNTDOWN; ticksLeft = COUNTDOWN_TICKS;
-        broadcast(server, Text.literal("매치가 곧 시작됩니다. 영웅을 고르세요! (목표 " + target + "킬)"));
+        for (ServerPlayerEntity p : list) { p.setHealth(p.getMaxHealth()); teleportToSpawn(p); }
+        String what = mode == MODE_CONTROL ? "점령전 (목표 " + target + "점)" : "팀 데스매치 (목표 " + target + "킬)";
+        broadcast(server, Text.literal("매치가 곧 시작됩니다: " + what + ". 영웅을 고르세요!"));
+        sync(server);
+        return null;
     }
 
     public static void stop(MinecraftServer server) {
@@ -46,16 +76,34 @@ public final class MatchManager {
         sync(server);
     }
 
-    /** 인원이 적은 팀에 배정. */
+    /** 선호 팀이 있으면 그 팀, 없으면 인원이 적은 팀. */
     public static void assign(ServerPlayerEntity p) {
         int a = 0, b = 0;
         for (int t : teams.values()) { if (t == 0) a++; else b++; }
-        int t = a <= b ? 0 : 1;
+        Integer pref = prefs.get(p.getUuid());
+        int t = pref != null ? pref : (a <= b ? 0 : 1);
         teams.put(p.getUuid(), t);
         p.sendMessage(Text.literal("당신은 " + (t == 0 ? "A" : "B") + "팀입니다."), false);
     }
-    public static void onJoin(ServerPlayerEntity p) { if (active()) assign(p); }
+    public static void onJoin(ServerPlayerEntity p) {
+        if (!active()) return;
+        assign(p);
+        teleportToSpawn(p);
+    }
     public static void onLeave(ServerPlayerEntity p) { teams.remove(p.getUuid()); }
+    public static void onRespawn(ServerPlayerEntity p) { if (active()) teleportToSpawn(p); }
+
+    /** 팀 스폰 지점 중 하나로 이동. 스폰이 없으면 아무것도 하지 않는다. */
+    public static void teleportToSpawn(ServerPlayerEntity p) {
+        int t = teamOf(p);
+        MapData map = MapData.get();
+        if (t < 0 || map.spawns(t).isEmpty()) return;
+        ServerWorld w = map.world(p.getServer());
+        if (w == null) return;
+        List<double[]> list = map.spawns(t);
+        double[] s = list.get(p.getRandom().nextInt(list.size()));
+        p.teleport(w, s[0], s[1], s[2], (float) s[3], 0f);
+    }
 
     public static void onDeath(ServerPlayerEntity victim, DamageSource src) {
         if (state != LIVE) return;
@@ -67,11 +115,13 @@ public final class MatchManager {
         KillFeedPayload kf = new KillFeedPayload(killer == null ? "" : killer.getName().getString(), kt,
                 victim.getName().getString(), vt);
         for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) ServerPlayNetworking.send(p, kf);
-        if (killer != null && killer != victim && kt >= 0 && kt != vt) score[kt]++;
+        if (mode == MODE_TDM && killer != null && killer != victim && kt >= 0 && kt != vt) score[kt]++;
     }
 
     public static void tick(MinecraftServer server) {
         if (state == NONE) return;
+        if (state == COUNTDOWN) freezePlayers(server);
+        if (state == LIVE && mode == MODE_CONTROL) controlTick(server);
         if (--ticksLeft <= 0) {
             switch (state) {
                 case COUNTDOWN -> { state = LIVE; ticksLeft = timeLimit; broadcast(server, Text.literal("매치 시작!")); }
@@ -80,6 +130,54 @@ public final class MatchManager {
             }
         } else if (state == LIVE && (score[0] >= target || score[1] >= target)) end(server);
         if (server.getTicks() % 10 == 0) sync(server);
+    }
+
+    private static void freezePlayers(MinecraftServer server) {
+        for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+            if (teamOf(p) < 0) continue;
+            p.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 5, 7, false, false, false));
+            p.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST, 5, 128, false, false, false));
+        }
+    }
+
+    private static void controlTick(MinecraftServer server) {
+        MapData map = MapData.get();
+        ServerWorld w = map.world(server);
+        if (w == null || !map.hasPoint()) return;
+        int[] present = new int[2];
+        for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+            int t = teamOf(p);
+            if (t < 0 || !p.isAlive() || p.getServerWorld() != w) continue;
+            double dx = p.getX() - map.point[0], dz = p.getZ() - map.point[2];
+            if (dx * dx + dz * dz <= map.radius * map.radius && Math.abs(p.getY() - map.point[1]) <= 4) present[t]++;
+        }
+        boolean contested = present[0] > 0 && present[1] > 0;
+        int only = contested ? -1 : present[0] > 0 ? 0 : present[1] > 0 ? 1 : -1;
+        if (!contested) {
+            if (only >= 0 && only != pointOwner) {
+                if (pointCap != only) {
+                    pointProgress -= 2;
+                    if (pointProgress <= 0) { pointCap = only; pointProgress = 0; }
+                } else if (++pointProgress >= 100) {
+                    pointOwner = only; pointCap = -1; pointProgress = 0;
+                    broadcast(server, Text.literal((only == 0 ? "A" : "B") + "팀이 점령지를 차지했습니다!"));
+                }
+            } else if (pointProgress > 0) {
+                pointProgress = Math.max(0, pointProgress - (only >= 0 ? 2 : 1));
+                if (pointProgress == 0) pointCap = -1;
+            }
+        }
+        if (pointOwner >= 0 && server.getTicks() % 20 == 0) score[pointOwner]++;
+        if (server.getTicks() % 10 == 0) {
+            Vector3f col = pointOwner == 0 ? new Vector3f(0.25f, 0.65f, 1f) : pointOwner == 1 ? new Vector3f(1f, 0.3f, 0.3f)
+                    : new Vector3f(0.85f, 0.85f, 0.85f);
+            DustParticleEffect fx = new DustParticleEffect(col, 1.4f);
+            for (int i = 0; i < 28; i++) {
+                double a = i * Math.PI * 2 / 28;
+                w.spawnParticles(fx, map.point[0] + Math.cos(a) * map.radius, map.point[1] + 0.3,
+                        map.point[2] + Math.sin(a) * map.radius, 1, 0, 0, 0, 0);
+            }
+        }
     }
 
     private static void end(MinecraftServer server) {
@@ -95,10 +193,11 @@ public final class MatchManager {
         List<ServerPlayerEntity> list = server.getPlayerManager().getPlayerList();
         for (ServerPlayerEntity p : list) {
             ServerPlayNetworking.send(p, state == NONE ? MatchPayload.NONE
-                    : new MatchPayload(state, teamOf(p), score[0], score[1], target, ticksLeft));
+                    : new MatchPayload(state, teamOf(p), score[0], score[1], target, ticksLeft,
+                            mode, pointOwner, pointProgress, pointCap));
         }
     }
 
-    public static void clear() { state = NONE; teams.clear(); }
+    public static void clear() { state = NONE; teams.clear(); prefs.clear(); }
     private MatchManager() {}
 }

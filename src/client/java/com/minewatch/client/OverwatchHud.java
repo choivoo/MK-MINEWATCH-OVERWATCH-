@@ -50,30 +50,32 @@ final class OverwatchHud {
         String ammo = s.reloading() ? "RELOAD" : s.ammo() + " / " + s.maxAmmo();
         g.drawText(tr, ammo, w - 30 - tr.getWidth(ammo) * 2, h - 40, s.ammo() <= s.maxAmmo() / 4 ? 0xFFFF5555 : WHITE, true);
 
-        // 어빌리티 (하단 중앙 우측)
-        int ax = w / 2 + 90, ay = h - 38;
-        // 블링크 충전
-        for (int i = 0; i < s.maxCharges(); i++) {
-            int x0 = ax + i * 14;
-            g.fill(x0, ay, x0 + 12, ay + 12, DARK);
-            if (i < s.charges()) g.fill(x0 + 1, ay + 1, x0 + 11, ay + 11, CYAN);
-            else if (i == s.charges()) { int fillH = Math.round(10 * s.chargeProgress()); g.fill(x0 + 1, ay + 11 - fillH, x0 + 11, ay + 11, 0x8800D4FF); }
-        }
-        g.drawText(tr, "Shift Blink", ax, ay + 15, WHITE, true);
-        // 리콜 쿨다운
-        int rx = ax + 70;
-        g.fill(rx, ay, rx + 26, ay + 12, DARK);
-        if (s.recallCooldown() > 0) g.fill(rx + 1, ay + 1, rx + 1 + Math.round(24 * (1 - s.recallCooldown())), ay + 11, 0x66FFFFFF);
-        else g.fill(rx + 1, ay + 1, rx + 25, ay + 11, CYAN);
-        g.drawText(tr, "E Recall", rx - 4, ay + 15, WHITE, true);
+        // 능력 아이콘 (하단 중앙 우측): 쿨다운은 시계 방향 부채꼴로 줄어든다
+        int iy = h - 52, isz = 28;
+        int bxI = w / 2 + 40, rxI = bxI + isz + 6;
+        // 블링크: 충전 개수 + 다음 충전 진행
+        icon(g, tr, bxI, iy, isz, "SHIFT", s.charges() > 0 ? CYAN : 0xFF446677);
+        if (s.charges() < s.maxCharges()) HudEffects.cooldownSweep(g, bxI, iy, isz, 1f - s.chargeProgress(), 0x99000000);
+        g.drawCenteredTextWithShadow(tr, String.valueOf(s.charges()), bxI + isz / 2, iy + isz - 11, WHITE);
+        // 리콜
+        icon(g, tr, rxI, iy, isz, "E", s.recalling() ? WHITE : CYAN);
+        HudEffects.cooldownSweep(g, rxI, iy, isz, s.recallCooldown(), 0x99000000);
 
-        // 궁극기 게이지
-        int ux = w / 2 - 14, uy = h - 56;
-        int pct = Math.round(s.ult() * 100);
-        g.fill(ux - 1, uy - 1, ux + 29, uy + 9, DARK);
-        g.fill(ux, uy, ux + Math.round(28 * s.ult()), uy + 8, pct >= 100 ? ORANGE : 0xFF8899AA);
-        String ut = pct >= 100 ? "Q ULT" : pct + "%";
-        g.drawCenteredTextWithShadow(tr, ut, ux + 14, uy - 11, pct >= 100 ? ORANGE : WHITE);
+        // 궁극기 원형 게이지 (하단 중앙)
+        int ucx = w / 2, ucy = h - 38, pct = Math.round(s.ult() * 100);
+        g.fill(ucx - 17, ucy - 17, ucx + 18, ucy + 18, 0x330B1220);
+        HudEffects.ring(g, ucx, ucy, 20, 4, s.ult(), pct >= 100 ? ORANGE : 0xFFB8C4D0, 0x88222B38);
+        g.drawCenteredTextWithShadow(tr, pct >= 100 ? "Q" : pct + "%", ucx, ucy - 4, pct >= 100 ? ORANGE : WHITE);
+
+        HudEffects.renderCrosshair(g);
+        HudEffects.renderHitMarker(g);
+        HudEffects.renderDamageIndicators(g);
+    }
+
+    private static void icon(DrawContext g, TextRenderer tr, int x, int y, int size, String key, int accent) {
+        g.fill(x - 1, y - 1, x + size + 1, y + size + 1, accent);
+        g.fill(x, y, x + size, y + size, DARK);
+        g.drawCenteredTextWithShadow(tr, key, x + size / 2, y + 4, WHITE);
     }
     private OverwatchHud() {}
 }

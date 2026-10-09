@@ -1,0 +1,65 @@
+package com.minewatch.client.screen;
+
+import com.minewatch.net.PartyActionPayload;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.text.Text;
+
+/** 오프라인 파티 배틀: 월드(싱글/LAN)에서 모드와 목표를 정해 매치를 시작한다. */
+public class PartyScreen extends Screen {
+    private static final int[][] TARGETS = {{10, 20, 30, 50}, {60, 100, 150}};
+    private static int mode = 0, targetIdx = 1, team = -1;
+
+    private final Screen parent;
+
+    public PartyScreen(Screen parent) {
+        super(Text.translatable("screen.minewatch.mode.party"));
+        this.parent = parent;
+    }
+
+    private static void send(String action) {
+        ClientPlayNetworking.send(new PartyActionPayload(action, mode, TARGETS[mode][targetIdx], team));
+    }
+
+    @Override
+    protected void init() {
+        boolean inWorld = client != null && client.world != null;
+        int x = width / 2 - 100, y = height / 4 - 4;
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.party.mode", Text.translatable("screen.minewatch.party.mode." + mode)), b -> {
+            mode = 1 - mode; targetIdx = Math.min(targetIdx, TARGETS[mode].length - 1); rebuild();
+        }).dimensions(x, y, 200, 20).build()).active = true;
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.party.target", TARGETS[mode][targetIdx]), b -> {
+            targetIdx = (targetIdx + 1) % TARGETS[mode].length; rebuild();
+        }).dimensions(x, y + 24, 200, 20).build());
+        String teamKey = team < 0 ? "auto" : team == 0 ? "a" : "b";
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.party.team", Text.translatable("screen.minewatch.party.team." + teamKey)), b -> {
+            team = team == 1 ? -1 : team + 1;
+            if (inWorld) send("team");
+            rebuild();
+        }).dimensions(x, y + 48, 200, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.party.arena"), b -> send("arena"))
+                .dimensions(x, y + 78, 200, 20).build()).active = inWorld;
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.party.start"), b -> { send("start"); client.setScreen(null); })
+                .dimensions(x, y + 102, 98, 20).build()).active = inWorld;
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.party.stop"), b -> send("stop"))
+                .dimensions(x + 102, y + 102, 98, 20).build()).active = inWorld;
+        addDrawableChild(ButtonWidget.builder(Text.translatable("gui.back"), b -> close())
+                .dimensions(x, y + 132, 200, 20).build());
+    }
+
+    private void rebuild() { clearChildren(); init(); }
+
+    @Override
+    public void render(DrawContext ctx, int mx, int my, float d) {
+        super.render(ctx, mx, my, d);
+        ctx.drawCenteredTextWithShadow(textRenderer, title, width / 2, height / 4 - 24, 0xFFA000);
+        boolean inWorld = client != null && client.world != null;
+        ctx.drawCenteredTextWithShadow(textRenderer,
+                Text.translatable(inWorld ? "screen.minewatch.party.hint" : "screen.minewatch.join_world"),
+                width / 2, height / 4 + 134 + 28, inWorld ? 0xAAAAAA : 0xFFAA00);
+    }
+
+    @Override public void close() { client.setScreen(parent); }
+}
