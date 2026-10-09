@@ -44,6 +44,8 @@ public class Tracer extends Hero {
 
     public Tracer() { super(1, "tracer"); }
 
+    @Override public net.minecraft.item.Item weapon() { return com.minewatch.ModItems.PULSE_PISTOLS; }
+
     @Override public double ultCost() { return 1000; }
     @Override public HeroState createState() { return new TracerState(); }
 
@@ -250,8 +252,10 @@ public class Tracer extends Hero {
     @Override
     public StatePayload toPayload(HeroState hs) {
         TracerState s = (TracerState) hs;
-        return new StatePayload(numericId, s.ammo, MAX_AMMO, s.reloadTicks > 0,
-                s.blinkCharges, MAX_BLINK, s.blinkCharges >= MAX_BLINK ? 1f : s.blinkTimer / (float) BLINK_RECHARGE_TICKS,
-                (float) (s.ultPoints / ultCost()), s.recalling, s.recallCooldown / (float) RECALL_COOLDOWN);
+        float blinkCd = s.blinkCharges >= MAX_BLINK ? 0f : 1f - s.blinkTimer / (float) BLINK_RECHARGE_TICKS;
+        return new StatePayload(numericId, s.ammo, MAX_AMMO, s.reloadTicks > 0, (float) (s.ultPoints / ultCost()), false, 0,
+                java.util.List.of(
+                        new StatePayload.Slot("blink", blinkCd, s.blinkCharges, MAX_BLINK, false),
+                        new StatePayload.Slot("recall", s.recallCooldown / (float) RECALL_COOLDOWN, 0, 0, s.recalling)));
     }
 }

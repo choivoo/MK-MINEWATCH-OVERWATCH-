@@ -1,6 +1,5 @@
 package com.minewatch.client;
 
-import com.minewatch.ModItems;
 import com.minewatch.net.InputPayload;
 import com.minewatch.net.StatePayload;
 import net.fabricmc.api.ClientModInitializer;
@@ -51,7 +50,7 @@ public class MineWatchClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
             if (mc.player == null || state.heroId() == 0) return;
             boolean gui = mc.currentScreen != null;
-            boolean holding = mc.player.getMainHandStack().isOf(ModItems.PULSE_PISTOLS);
+            boolean holding = mc.player.getMainHandStack().getItem() instanceof com.minewatch.HeroWeaponItem;
             int b = 0;
             if (!gui) {
                 if (holding && mc.options.attackKey.isPressed()) b |= InputPayload.FIRE;
@@ -60,6 +59,7 @@ public class MineWatchClient implements ClientModInitializer {
                 if (ABILITY2.isPressed()) b |= InputPayload.ABILITY2;
                 if (ULT.isPressed()) b |= InputPayload.ULT;
                 if (MELEE.isPressed()) b |= InputPayload.MELEE;
+                if (holding && mc.options.useKey.isPressed()) b |= InputPayload.ALT_FIRE;
             }
             // 사격 반동(작은 화면 흔들림)
             if ((b & InputPayload.FIRE) != 0 && !state.reloading() && state.ammo() > 0) {
@@ -73,9 +73,15 @@ public class MineWatchClient implements ClientModInitializer {
 
         // 권총을 든 동안 바닐라 공격/채굴 차단
         AttackBlockCallback.EVENT.register((p, w, h, pos, dir) ->
-                w.isClient && state.heroId() != 0 && p.getMainHandStack().isOf(ModItems.PULSE_PISTOLS) ? ActionResult.FAIL : ActionResult.PASS);
+                w.isClient && state.heroId() != 0 && p.getMainHandStack().getItem() instanceof com.minewatch.HeroWeaponItem ? ActionResult.FAIL : ActionResult.PASS);
+        // 영웅 무기를 든 동안 우클릭은 보조 발사 전용: 바닐라 아이템/블록 사용을 막는다
+        net.fabricmc.fabric.api.event.player.UseItemCallback.EVENT.register((p, w, h) ->
+                w.isClient && state.heroId() != 0 && p.getMainHandStack().getItem() instanceof com.minewatch.HeroWeaponItem
+                        ? net.minecraft.util.TypedActionResult.fail(p.getStackInHand(h)) : net.minecraft.util.TypedActionResult.pass(p.getStackInHand(h)));
+        net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register((p, w, h, hit) ->
+                w.isClient && state.heroId() != 0 && p.getMainHandStack().getItem() instanceof com.minewatch.HeroWeaponItem ? ActionResult.FAIL : ActionResult.PASS);
         AttackEntityCallback.EVENT.register((p, w, h, e, hit) ->
-                state.heroId() != 0 && p.getMainHandStack().isOf(ModItems.PULSE_PISTOLS) ? ActionResult.FAIL : ActionResult.PASS);
+                state.heroId() != 0 && p.getMainHandStack().getItem() instanceof com.minewatch.HeroWeaponItem ? ActionResult.FAIL : ActionResult.PASS);
 
         net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(com.minewatch.entity.ModEntities.BOT, com.minewatch.client.render.BotRenderer::new);
         HudRenderCallback.EVENT.register(OverwatchHud::render);

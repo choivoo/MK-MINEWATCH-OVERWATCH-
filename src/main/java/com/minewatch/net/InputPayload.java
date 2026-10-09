@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier;
 /** 클라이언트 -> 서버: 매 틱 입력 상태 (비트 플래그 + 이동 입력). */
 public record InputPayload(int buttons, float forward, float sideways) implements CustomPayload {
     public static final int FIRE = 1, RELOAD = 1 << 1, ABILITY1 = 1 << 2, ABILITY2 = 1 << 3,
-            ULT = 1 << 4, MELEE = 1 << 5;
+            ULT = 1 << 4, MELEE = 1 << 5, ALT_FIRE = 1 << 6;
 
     public static final Id<InputPayload> ID = new Id<>(Identifier.of("minewatch", "input"));
     public static final PacketCodec<RegistryByteBuf, InputPayload> CODEC = PacketCodec.of(
@@ -22,7 +22,7 @@ public record InputPayload(int buttons, float forward, float sideways) implement
 
     /** 서버에서 받은 값 검증: 정의된 버튼 비트만 남기고, 이동 입력은 [-1, 1] 로 제한(NaN 은 0). */
     public InputPayload sanitized() {
-        int mask = FIRE | RELOAD | ABILITY1 | ABILITY2 | ULT | MELEE;
+        int mask = FIRE | RELOAD | ABILITY1 | ABILITY2 | ULT | MELEE | ALT_FIRE;
         return new InputPayload(buttons & mask, clamp(forward), clamp(sideways));
     }
 

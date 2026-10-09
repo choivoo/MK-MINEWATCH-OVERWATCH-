@@ -37,6 +37,7 @@ public final class HeroManager {
     public static void select(ServerPlayerEntity p, Hero hero) {
         Entry old = ENTRIES.remove(p.getUuid());
         if (old != null) old.hero.onDeselect(p, old.state);
+        com.minewatch.hero.HeroKit.clearWeapons(p);
         if (hero == null) {
             setMaxHealth(p, 20);
             ServerPlayNetworking.send(p, StatePayload.NONE);
@@ -49,6 +50,17 @@ public final class HeroManager {
         ENTRIES.put(p.getUuid(), e);
         setMaxHealth(p, hero.maxHealthOw() / Hero.HP_SCALE);
         hero.onSelect(p, e.state);
+        giveWeapon(p, hero);
+    }
+
+    /** 영웅 무기를 1번 슬롯에 지급한다. 원래 있던 아이템은 인벤토리로 옮기거나 떨어뜨린다. */
+    private static void giveWeapon(ServerPlayerEntity p, Hero hero) {
+        if (hero.weapon() == null) return;
+        var inv = p.getInventory();
+        var old = inv.getStack(0);
+        inv.setStack(0, new net.minecraft.item.ItemStack(hero.weapon()));
+        if (!old.isEmpty() && !(old.getItem() instanceof com.minewatch.HeroWeaponItem)) inv.offerOrDrop(old);
+        inv.selectedSlot = 0;
     }
 
     /** 리스폰 후 새 플레이어 엔티티에 영웅 체력 설정을 다시 적용한다. */

@@ -8,7 +8,7 @@ class InputPayloadTest {
     @Test void dropsUnknownButtonBits() {
         InputPayload p = new InputPayload(0xFFFF, 0, 0).sanitized();
         assertEquals(InputPayload.FIRE | InputPayload.RELOAD | InputPayload.ABILITY1 | InputPayload.ABILITY2
-                | InputPayload.ULT | InputPayload.MELEE, p.buttons());
+                | InputPayload.ULT | InputPayload.MELEE | InputPayload.ALT_FIRE, p.buttons());
     }
 
     @Test void clampsMovementAndRejectsNaN() {

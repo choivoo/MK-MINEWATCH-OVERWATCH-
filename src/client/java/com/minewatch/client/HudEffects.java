@@ -29,6 +29,17 @@ final class HudEffects {
         g.fill(cx, cy, cx + 1, cy + 1, c);
     }
 
+    /** 조준경: 가운데 정사각 창만 남기고 바깥을 어둡게, 십자선 표시. */
+    static void renderScope(DrawContext g) {
+        int w = g.getScaledWindowWidth(), h = g.getScaledWindowHeight();
+        int sq = (int) (h * 0.92), x0 = (w - sq) / 2, y0 = (h - sq) / 2, cx = w / 2, cy = h / 2;
+        int black = 0xFF000000;
+        g.fill(0, 0, x0, h, black); g.fill(x0 + sq, 0, w, h, black);
+        g.fill(x0, 0, x0 + sq, y0, black); g.fill(x0, y0 + sq, x0 + sq, h, black);
+        g.fill(x0, cy, x0 + sq, cy + 1, 0xCC000000); g.fill(cx, y0, cx + 1, y0 + sq, 0xCC000000);
+        g.fill(cx - 1, cy - 1, cx + 2, cy + 2, 0xFFFF2020);
+    }
+
     static void renderHitMarker(DrawContext g) {
         int kind = hitKind;
         if (kind < 0) return;

@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 
 final class ServerLifecycleCleanup {
     static void register() {
-        ServerLifecycleEvents.SERVER_STOPPED.register(s -> { HeroManager.clear(); PulseBombs.clear(); com.minewatch.server.MatchManager.clear(); com.minewatch.server.HealthPacks.clear(); com.minewatch.server.MapData.clear(); com.minewatch.server.BotManager.reset(); com.minewatch.server.QueueManager.clear(); });
+        ServerLifecycleEvents.SERVER_STOPPED.register(s -> { HeroManager.clear(); PulseBombs.clear(); com.minewatch.server.MatchManager.clear(); com.minewatch.server.HealthPacks.clear(); com.minewatch.server.MapData.clear(); com.minewatch.server.BotManager.reset(); com.minewatch.server.QueueManager.clear(); com.minewatch.server.VenomMines.clear(); });
     }
     private ServerLifecycleCleanup() {}
 }

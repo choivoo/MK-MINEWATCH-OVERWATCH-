@@ -5,7 +5,7 @@
   "name": "MineWatch GameTests",
   "environment": "*",
   "entrypoints": {
-    "fabric-gametest": ["com.minewatch.test.MineWatchGameTests"]
+    "fabric-gametest": ["com.minewatch.test.MineWatchGameTests", "com.minewatch.test.HeroGameTests"]
   },
   "depends": {
     "minewatch": "*"

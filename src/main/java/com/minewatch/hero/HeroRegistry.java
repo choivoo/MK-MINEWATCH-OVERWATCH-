@@ -8,6 +8,12 @@ public final class HeroRegistry {
     private static final Map<Integer, Hero> BY_NUM = new LinkedHashMap<>();
 
     public static final Tracer TRACER = register(new Tracer());
+    public static final Soldier76 SOLDIER76 = register(new Soldier76());
+    public static final Widowmaker WIDOWMAKER = register(new Widowmaker());
+    public static final Reinhardt REINHARDT = register(new Reinhardt());
+    public static final Roadhog ROADHOG = register(new Roadhog());
+    public static final Ana ANA = register(new Ana());
+    public static final Mercy MERCY = register(new Mercy());
 
     private static <T extends Hero> T register(T hero) {
         BY_ID.put(hero.id, hero);

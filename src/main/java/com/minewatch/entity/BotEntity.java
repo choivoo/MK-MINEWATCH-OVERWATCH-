@@ -50,7 +50,10 @@ public class BotEntity extends PathAwareEntity implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private LivingEntity target;
-    private int cooldown, reaction, strafeTicks, strafeDir = 1, shotCount;
+    private int cooldown, reaction, strafeTicks, strafeDir = 1, shotCount, stunTicks;
+
+    /** 기절: 해당 틱 동안 AI 가 멈춘다. */
+    public void stun(int ticks) { stunTicks = Math.max(stunTicks, ticks); }
 
     public BotEntity(EntityType<? extends PathAwareEntity> type, World world) {
         super(type, world);
@@ -136,6 +139,7 @@ public class BotEntity extends PathAwareEntity implements GeoEntity {
 
     private void aiTick(ServerWorld w) {
         if (MatchManager.state() != MatchManager.LIVE) { getNavigation().stop(); return; }
+        if (stunTicks > 0) { stunTicks--; getNavigation().stop(); return; }
         Type type = botType();
         Difficulty diff = difficulty();
 

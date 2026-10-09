@@ -4,7 +4,8 @@
   "package": "com.minewatch.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "InGameHudMixin"
+    "InGameHudMixin",
+    "GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -26,10 +26,22 @@ public final class OwDamage {
             hs = HeroManager.stateOf(tp);
             if (hs != null && hs.invulnerable()) return 0;
         }
+        // 공격자의 피해 증가 버프
+        if (attacker instanceof ServerPlayerEntity ap) {
+            HeroState ah = HeroManager.stateOf(ap);
+            if (ah != null) owDamage *= ah.outMult();
+        }
         double remaining = owDamage, absorbed = 0;
         if (hs != null) {
-            remaining = hs.pools.absorb(owDamage);
-            absorbed = owDamage - remaining;
+            // 정면 방벽 -> 받는 피해 감소 -> 보호막/방어구
+            double afterBarrier = owDamage;
+            if (hs.barrierUp && target instanceof ServerPlayerEntity bt) {
+                Vec3d look = bt.getRotationVec(1f);
+                afterBarrier = hs.absorbFront(look.x, look.z, attacker.getX() - bt.getX(), attacker.getZ() - bt.getZ(), 70, owDamage);
+            }
+            double barrierAbsorbed = owDamage - afterBarrier;
+            remaining = hs.pools.absorb(afterBarrier * hs.inMult());
+            absorbed = barrierAbsorbed + (afterBarrier * hs.inMult() - remaining);
         }
         double toHealth = 0;
         if (remaining > 0) {
