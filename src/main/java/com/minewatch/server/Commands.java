@@ -40,8 +40,8 @@ public final class Commands {
                         .then(literal("a").executes(c -> team(c.getSource(), 0)))
                         .then(literal("b").executes(c -> team(c.getSource(), 1))))
                 .then(literal("healthpack").requires(s -> s.hasPermissionLevel(2))
-                        .then(literal("large").executes(c -> { var s = c.getSource(); HealthPacks.place(s.getWorld(), s.getPosition(), true); return 1; }))
-                        .then(literal("small").executes(c -> { var s = c.getSource(); HealthPacks.place(s.getWorld(), s.getPosition(), false); return 1; }))
+                        .then(literal("large").executes(c -> { var s = c.getSource(); HealthPacks.place(worldOf(s), s.getPosition(), true); return 1; }))
+                        .then(literal("small").executes(c -> { var s = c.getSource(); HealthPacks.place(worldOf(s), s.getPosition(), false); return 1; }))
                         .then(literal("clear").executes(c -> HealthPacks.removeAll())))
                 .then(literal("match").requires(s -> s.hasPermissionLevel(2))
                         .then(literal("stop").executes(c -> { MatchManager.stop(c.getSource().getServer()); return 1; }))
@@ -100,8 +100,13 @@ public final class Commands {
                 }));
     }
 
-    private static int team(ServerCommandSource s, int team) {
-        MatchManager.setPreference(s.getPlayer(), team);
+    /** 콘솔 명령은 월드가 없을 수 있어 오버월드로 대신한다. */
+    private static net.minecraft.server.world.ServerWorld worldOf(ServerCommandSource s) {
+        return s.getWorld() != null ? s.getWorld() : s.getServer().getOverworld();
+    }
+
+    private static int team(ServerCommandSource s, int team) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        MatchManager.setPreference(s.getPlayerOrThrow(), team);
         return 1;
     }
 

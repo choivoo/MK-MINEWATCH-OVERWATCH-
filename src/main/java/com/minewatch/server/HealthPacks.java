@@ -21,6 +21,7 @@ public final class HealthPacks {
     private static final List<Pack> PACKS = new ArrayList<>();
 
     public static void place(ServerWorld world, Vec3d pos, boolean large) {
+        if (world == null) return;
         Pack p = new Pack();
         p.world = world; p.pos = pos; p.large = large;
         PACKS.add(p);
@@ -29,6 +30,7 @@ public final class HealthPacks {
     public static int removeAll() { int n = PACKS.size(); PACKS.clear(); return n; }
 
     public static void tick(MinecraftServer server) {
+        PACKS.removeIf(k -> k.world == null);
         for (Pack k : PACKS) {
             if (k.cooldown > 0) { k.cooldown--; continue; }
             if (k.world.getTime() % 5 == 0)

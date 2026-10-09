@@ -329,4 +329,13 @@ public class HeroGameTests implements FabricGameTest {
             check(com.minewatch.ModSounds.get(n) != null, "이벤트 누락: " + n);
         ctx.complete();
     }
+
+    /** 콘솔 명령처럼 월드가 없는 상태로 힐팩을 만들어도 서버가 죽지 않아야 한다(1.0 배포 시험에서 발견된 크래시). */
+    @GameTest(batchId = "h11", templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 40)
+    public void healthPackWithoutWorldDoesNotCrash(TestContext ctx) {
+        com.minewatch.server.HealthPacks.place(null, Vec3d.ZERO, true);
+        com.minewatch.server.HealthPacks.tick(ctx.getWorld().getServer());
+        com.minewatch.server.HealthPacks.clear();
+        ctx.complete();
+    }
 }
