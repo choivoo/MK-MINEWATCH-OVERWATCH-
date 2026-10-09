@@ -20,5 +20,13 @@ public record InputPayload(int buttons, float forward, float sideways) implement
 
     public boolean has(int flag) { return (buttons & flag) != 0; }
 
+    /** 서버에서 받은 값 검증: 정의된 버튼 비트만 남기고, 이동 입력은 [-1, 1] 로 제한(NaN 은 0). */
+    public InputPayload sanitized() {
+        int mask = FIRE | RELOAD | ABILITY1 | ABILITY2 | ULT | MELEE;
+        return new InputPayload(buttons & mask, clamp(forward), clamp(sideways));
+    }
+
+    private static float clamp(float v) { return Float.isNaN(v) ? 0f : Math.max(-1f, Math.min(1f, v)); }
+
     @Override public Id<? extends CustomPayload> getId() { return ID; }
 }

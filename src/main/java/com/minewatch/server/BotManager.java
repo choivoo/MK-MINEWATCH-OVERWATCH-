@@ -41,6 +41,12 @@ public final class BotManager {
         for (int i = 0; i < Math.max(0, n - humans); i++) spawn(server, 0, Type.FRIENDLY, diff);
     }
 
+    /** 각 팀을 size 명까지 봇으로 채운다(A팀은 아군 봇, B팀은 적 봇 구성). humansA/B 는 이미 있는 인원. */
+    public static void fillTeams(MinecraftServer server, Difficulty diff, int size, int humansA, int humansB) {
+        for (int i = 0; i < size - humansA; i++) spawn(server, 0, Type.FRIENDLY, diff);
+        for (int i = 0; i < size - humansB; i++) spawn(server, 1, BotStats.enemyTypeAt(i), diff);
+    }
+
     public static void onBotDeath(BotEntity b) {
         MinecraftServer server = b.getServer();
         if (server == null || MatchManager.state() != MatchManager.LIVE) return;

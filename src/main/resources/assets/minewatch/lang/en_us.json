@@ -1,4 +1,8 @@
 {
+  "screen.minewatch.queue.leave": "Leave Queue",
+  "screen.minewatch.mode.online.tooltip": "Join the online queue; the match starts automatically",
+  "screen.minewatch.queue.status": "In queue: %s players (min %s)",
+  "screen.minewatch.queue.countdown": "Match starts in %ss",
   "entity.minewatch.bot": "Bot",
   "screen.minewatch.mode.ai.tooltip": "Fight bots (set difficulty in Game Settings)",
   "screen.minewatch.party.difficulty": "Bot difficulty: %s",

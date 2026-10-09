@@ -10,7 +10,18 @@ public final class PartyActions {
         return p.hasPermissionLevel(2) || p.getServer().isHost(p.getGameProfile());
     }
 
+    private static final java.util.Map<java.util.UUID, Integer> LAST_ACTION = new java.util.HashMap<>();
+
     public static void handle(ServerPlayerEntity p, PartyActionPayload a) {
+        // 과도한 요청 방지: 같은 플레이어의 동작은 0.25초에 한 번만 처리
+        int now = p.getServer().getTicks();
+        Integer last = LAST_ACTION.put(p.getUuid(), now);
+        if (last != null && now - last < 5) return;
+        switch (a.action()) {
+            case "queue_join" -> { QueueManager.join(p); return; }
+            case "queue_leave" -> { QueueManager.leave(p); return; }
+            default -> {}
+        }
         if (a.action().equals("team")) { MatchManager.setPreference(p, a.team()); return; }
         if (!canManage(p)) { p.sendMessage(Text.literal("호스트 또는 OP 만 사용할 수 있습니다."), true); return; }
         switch (a.action()) {

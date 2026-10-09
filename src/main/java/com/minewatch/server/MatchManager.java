@@ -24,7 +24,7 @@ public final class MatchManager {
     public static final int COUNTDOWN_TICKS = 200, ENDED_TICKS = 200, CAPTURE_TICKS = 100;
 
     private static int state = NONE, mode = MODE_TDM;
-    private static boolean aiMatch = false;
+    private static boolean aiMatch = false, onlineMatch = false;
     private static int ticksLeft, target, timeLimit;
     private static final int[] score = new int[2];
     private static final Map<UUID, Integer> teams = new HashMap<>();
@@ -45,10 +45,11 @@ public final class MatchManager {
             if (o == null) continue;
             ServerWorld w = server.getWorld(o.world());
             if (w != null) p.teleport(w, o.x(), o.y(), o.z(), o.yaw(), o.pitch());
+            origins.remove(p.getUuid());
             if (!p.isAlive()) continue;
             p.setHealth(p.getMaxHealth());
         }
-        origins.clear();
+        // 오프라인인 참가자의 위치 기록은 남겨 두었다가 재접속 때 로비로 돌려보낸다.
     }
 
     // 점령지 상태
@@ -87,6 +88,16 @@ public final class MatchManager {
 
     /** ai=true 면 모든 플레이어를 A팀에 두고 B팀(및 부족한 A팀)을 봇으로 채운다. */
     public static String start(MinecraftServer server, int newMode, int targetValue, int seconds, boolean ai, int difficulty) {
+        return start(server, newMode, targetValue, seconds, ai, difficulty, null, 0);
+    }
+
+    /**
+     * participants 가 null 이면 접속 중인 모든 플레이어, 아니면 해당 플레이어만 참가(온라인 큐 매치).
+     * fillTeamSize > 0 이면 각 팀을 그 인원까지 봇으로 채운다.
+     */
+    public static String start(MinecraftServer server, int newMode, int targetValue, int seconds, boolean ai, int difficulty,
+                               java.util.Collection<ServerPlayerEntity> participants, int fillTeamSize) {
+        onlineMatch = participants != null;
         BotManager.clearAll();
         aiMatch = ai;
         MapData map = MapData.get();
@@ -96,13 +107,14 @@ public final class MatchManager {
         POINT.reset();
         target = targetValue; timeLimit = seconds * 20;
         teams.clear();
-        List<ServerPlayerEntity> list = server.getPlayerManager().getPlayerList();
+        List<ServerPlayerEntity> list = participants != null ? new java.util.ArrayList<>(participants) : server.getPlayerManager().getPlayerList();
         for (ServerPlayerEntity p : list) { recordOrigin(p); assign(p); }
         ServerWorld mw = map.world(server);
         if (mw != null) mw.setTimeOfDay(6000);   // 항상 낮에 시작
         state = COUNTDOWN; ticksLeft = COUNTDOWN_TICKS;
         for (ServerPlayerEntity p : list) { p.setHealth(p.getMaxHealth()); teleportToSpawn(p); }
         if (ai) BotManager.spawnMatchBots(server, BotStats.Difficulty.of(difficulty), list.size());
+        else if (fillTeamSize > 0) BotManager.fillTeams(server, BotStats.Difficulty.of(difficulty), fillTeamSize, countTeam(0), countTeam(1));
         String what = (ai ? "AI 대전 · " : "") + (mode == MODE_CONTROL ? "점령전 (목표 " + target + "점)" : "팀 데스매치 (목표 " + target + "킬)");
         broadcast(server, Text.literal("매치가 곧 시작됩니다: " + what + ". 영웅을 고르세요!"));
         sync(server);
@@ -112,7 +124,7 @@ public final class MatchManager {
     public static void stop(MinecraftServer server) {
         state = NONE; teams.clear();
         BotManager.clearAll();
-        aiMatch = false;
+        aiMatch = false; onlineMatch = false;
         returnToOrigins(server);
         sync(server);
     }
@@ -126,13 +138,40 @@ public final class MatchManager {
         teams.put(p.getUuid(), t);
         p.sendMessage(Text.literal("당신은 " + (t == 0 ? "A" : "B") + "팀입니다."), false);
     }
-    public static void onJoin(ServerPlayerEntity p) {
-        if (!active()) return;
-        recordOrigin(p);
-        assign(p);
-        teleportToSpawn(p);
+    public static int countTeam(int team) {
+        int n = 0;
+        for (int t : teams.values()) if (t == team) n++;
+        return n;
     }
-    public static void onLeave(ServerPlayerEntity p) { teams.remove(p.getUuid()); }
+
+    /**
+     * 접속 처리. 진행 중 매치에 팀이 남아 있는 재접속자는 같은 팀/영웅으로 스폰에 복귀하고,
+     * 매치가 끝난 뒤 돌아온 플레이어는 매치 전 위치(로비)로 보낸다.
+     */
+    public static void onJoin(ServerPlayerEntity p) {
+        if (!active()) {
+            Origin o = origins.remove(p.getUuid());
+            if (o != null) {
+                ServerWorld w = p.getServer().getWorld(o.world());
+                if (w != null) p.teleport(w, o.x(), o.y(), o.z(), o.yaw(), o.pitch());
+            }
+            return;
+        }
+        boolean rejoin = teams.containsKey(p.getUuid());
+        if (!rejoin) {
+            if (onlineMatch) return;           // 큐 매치 도중 새로 들어온 사람은 로비에 머문다
+            recordOrigin(p);
+            assign(p);
+        }
+        teleportToSpawn(p);
+        if (rejoin) {
+            var hero = HeroManager.last(p.getUuid());
+            if (hero != null) HeroManager.select(p, hero);
+            p.sendMessage(Text.literal("매치에 다시 참가했습니다."), false);
+        }
+    }
+    /** 매치 중에는 팀 배정을 유지해 재접속할 수 있게 한다. */
+    public static void onLeave(ServerPlayerEntity p) { if (!active()) teams.remove(p.getUuid()); }
     public static void onRespawn(ServerPlayerEntity p) { if (active()) teleportToSpawn(p); }
 
     /** 팀 스폰 지점 중 하나로 이동. 스폰이 없으면 아무것도 하지 않는다. */

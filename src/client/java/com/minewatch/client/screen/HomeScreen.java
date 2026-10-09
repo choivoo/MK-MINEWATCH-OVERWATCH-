@@ -13,6 +13,7 @@ import net.minecraft.text.Text;
 public class HomeScreen extends Screen {
     private static final int ORANGE = 0xFFF99E1A, WHITE = 0xFFFFFFFF, DIM = 0xFF9AA7B8;
     private final Screen parent;
+    private com.minewatch.net.QueuePayload shownQueue = com.minewatch.net.QueuePayload.NONE;
 
     public HomeScreen(Screen parent) {
         super(Text.translatable("screen.minewatch.home"));
@@ -34,10 +35,11 @@ public class HomeScreen extends Screen {
             PartyScreen.send("play_ai");
             client.setScreen(null);
         }).dimensions(x, y + 88, w, 22).tooltip(Tooltip.of(Text.translatable("screen.minewatch.mode.ai.tooltip"))).build());
-        var online = addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.mode.online"), b -> {})
-                .dimensions(x, y + 114, w, 22)
-                .tooltip(Tooltip.of(Text.translatable("screen.minewatch.coming_soon"))).build());
-        online.active = false;
+        boolean inQueue = MineWatchClient.queue.inQueue();
+        addDrawableChild(ButtonWidget.builder(Text.translatable(inQueue ? "screen.minewatch.queue.leave" : "screen.minewatch.mode.online"), b -> {
+            PartyScreen.send(MineWatchClient.queue.inQueue() ? "queue_leave" : "queue_join");
+        }).dimensions(x, y + 114, w, 22).tooltip(Tooltip.of(Text.translatable("screen.minewatch.mode.online.tooltip"))).build());
+        shownQueue = MineWatchClient.queue;
         addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.close"), b -> close())
                 .dimensions(x, y + 148, w, 20).build());
     }
@@ -66,6 +68,17 @@ public class HomeScreen extends Screen {
                 : Text.translatable("hero.minewatch." + h.id), rx, ry + 12, WHITE, true);
         ctx.drawText(textRenderer, Text.translatable("screen.minewatch.current_mode"), rx, ry + 36, DIM, false);
         ctx.drawText(textRenderer, PartyScreen.summary(), rx, ry + 48, WHITE, true);
+        var q = MineWatchClient.queue;
+        if (q.inQueue()) {
+            ctx.drawText(textRenderer, Text.translatable("screen.minewatch.queue.status", q.queued(), q.min()), 36, height / 2 + 78, ORANGE, true);
+            if (q.seconds() >= 0) ctx.drawText(textRenderer, Text.translatable("screen.minewatch.queue.countdown", q.seconds()), 36, height / 2 + 90, WHITE, true);
+        }
+    }
+
+    @Override
+    public void tick() {
+        // 큐 참가/취소 상태가 바뀌면 버튼 문구를 갱신한다
+        if (MineWatchClient.queue.inQueue() != shownQueue.inQueue()) clearAndInit();
     }
 
     @Override public void close() { client.setScreen(parent); }

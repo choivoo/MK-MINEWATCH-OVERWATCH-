@@ -20,6 +20,7 @@ import org.lwjgl.glfw.GLFW;
 public class MineWatchClient implements ClientModInitializer {
     public static volatile StatePayload state = StatePayload.NONE;
     public static volatile com.minewatch.net.PoolsPayload pools = com.minewatch.net.PoolsPayload.NONE;
+    public static volatile com.minewatch.net.QueuePayload queue = com.minewatch.net.QueuePayload.NONE;
 
     static final String CAT = "category.minewatch";
     static final KeyBinding ABILITY1 = key("key.minewatch.ability1", GLFW.GLFW_KEY_LEFT_SHIFT); // 블링크
@@ -37,7 +38,8 @@ public class MineWatchClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(StatePayload.ID, (payload, ctx) -> state = payload);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.PoolsPayload.ID, (payload, ctx) -> pools = payload);
-        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; pools = com.minewatch.net.PoolsPayload.NONE; MatchHud.reset(); HudEffects.reset(); });
+        ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.QueuePayload.ID, (payload, ctx) -> queue = payload);
+        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; pools = com.minewatch.net.PoolsPayload.NONE; queue = com.minewatch.net.QueuePayload.NONE; MatchHud.reset(); HudEffects.reset(); });
 
         // 영웅 활성 중에는 기본 조작(웅크리기/버리기)과 충돌하지 않도록 먼저 소비
         ClientTickEvents.START_CLIENT_TICK.register(mc -> {
@@ -89,6 +91,8 @@ public class MineWatchClient implements ClientModInitializer {
             int ms = MatchHud.match.state();
             if (lastMatchState != 0 && ms == 0) openLobby = true;
             lastMatchState = ms;
+            // 매치가 시작되면(큐 매치 등) 열려 있는 로비/설정 화면을 닫는다
+            if (ms != 0 && mc.currentScreen != null && mc.currentScreen.getClass().getPackageName().endsWith("client.screen")) mc.setScreen(null);
             if (mc.player == null || mc.world == null) return;
             while (MENU.wasPressed()) if (mc.currentScreen == null) mc.setScreen(new com.minewatch.client.screen.HomeScreen(null));
             if (openLobby && mc.currentScreen == null && ms == 0) {

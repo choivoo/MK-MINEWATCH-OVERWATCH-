@@ -57,12 +57,19 @@ public final class HeroManager {
         if (e != null) setMaxHealth(p, e.hero.maxHealthOw() / Hero.HP_SCALE);
     }
 
-    public static void remove(ServerPlayerEntity p) { ENTRIES.remove(p.getUuid()); }
-    public static void clear() { ENTRIES.clear(); }
+    /** 접속 종료 시 마지막으로 쓰던 영웅을 기억해 두었다가 재접속하면 복원한다. */
+    private static final Map<UUID, Hero> LAST = new HashMap<>();
+    public static Hero last(UUID id) { return LAST.get(id); }
+
+    public static void remove(ServerPlayerEntity p) {
+        Entry e = ENTRIES.remove(p.getUuid());
+        if (e != null) LAST.put(p.getUuid(), e.hero);
+    }
+    public static void clear() { ENTRIES.clear(); LAST.clear(); }
 
     public static void setInput(ServerPlayerEntity p, com.minewatch.net.InputPayload in) {
         Entry e = ENTRIES.get(p.getUuid());
-        if (e != null) e.state.input = in;
+        if (e != null) e.state.input = in.sanitized();
     }
 
     public static void tickAll(Iterable<ServerPlayerEntity> players) {
