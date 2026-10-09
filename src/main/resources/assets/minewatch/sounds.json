@@ -1,0 +1,497 @@
+{
+  "pulse_fire_crack": { "sounds": [
+    {"name": "minecraft:note/snare", "volume": 0.3, "pitch": 1.45, "attenuation_distance": 24, "preload": true},
+    {"name": "minecraft:note/snare", "volume": 0.3, "pitch": 1.55, "attenuation_distance": 24, "preload": true},
+    {"name": "minecraft:note/snare", "volume": 0.3, "pitch": 1.65, "attenuation_distance": 24, "preload": true}
+  ] },
+  "pulse_fire_tink": { "sounds": [
+    {"name": "minecraft:block/amethyst/place1", "volume": 0.55, "pitch": 1.5, "attenuation_distance": 24, "preload": true},
+    {"name": "minecraft:block/amethyst/place2", "volume": 0.55, "pitch": 1.5, "attenuation_distance": 24, "preload": true},
+    {"name": "minecraft:block/amethyst/place3", "volume": 0.55, "pitch": 1.5, "attenuation_distance": 24, "preload": true},
+    {"name": "minecraft:block/amethyst/place4", "volume": 0.55, "pitch": 1.5, "attenuation_distance": 24, "preload": true}
+  ] },
+  "pulse_fire_first": { "sounds": [
+    {"name": "minecraft:fireworks/blast1", "volume": 0.5, "pitch": 1.9, "attenuation_distance": 24, "preload": true}
+  ] },
+  "reload_open": { "sounds": [
+    {"name": "minecraft:entity/itemframe/remove_item1", "volume": 0.3, "pitch": 1.25, "preload": true},
+    {"name": "minecraft:entity/itemframe/remove_item2", "volume": 0.3, "pitch": 1.25, "preload": true},
+    {"name": "minecraft:entity/itemframe/remove_item3", "volume": 0.3, "pitch": 1.25, "preload": true},
+    {"name": "minecraft:entity/itemframe/remove_item4", "volume": 0.3, "pitch": 1.25, "preload": true}
+  ] },
+  "reload_flip": { "sounds": [
+    {"name": "minecraft:item/trident/throw1", "volume": 0.24, "pitch": 1.35, "preload": true},
+    {"name": "minecraft:item/trident/throw2", "volume": 0.24, "pitch": 1.35, "preload": true}
+  ] },
+  "reload_spin": { "sounds": [
+    {"name": "minecraft:item/crossbow/quick_charge/quick3_1", "volume": 0.7, "pitch": 1.7, "preload": true}
+  ] },
+  "reload_charged": { "sounds": [
+    {"name": "minecraft:item/crossbow/loading_end", "pitch": 1.15, "preload": true}
+  ] },
+  "reload_chime": { "sounds": [
+    {"name": "minecraft:note/bell", "pitch": 1.5, "preload": true}
+  ] },
+  "reload_shine": { "sounds": [
+    {"name": "minecraft:block/amethyst/break1", "volume": 0.4, "pitch": 1.4, "preload": true},
+    {"name": "minecraft:block/amethyst/break2", "volume": 0.4, "pitch": 1.4, "preload": true},
+    {"name": "minecraft:block/amethyst/break3", "volume": 0.4, "pitch": 1.4, "preload": true},
+    {"name": "minecraft:block/amethyst/break4", "volume": 0.4, "pitch": 1.4, "preload": true}
+  ] },
+  "reload_swing": { "sounds": [
+    {"name": "minecraft:item/trident/throw1", "volume": 0.12, "pitch": 1.8},
+    {"name": "minecraft:item/trident/throw2", "volume": 0.12, "pitch": 1.8}
+  ] },
+  "reload_land": { "sounds": [
+    {"name": "minecraft:entity/itemframe/add_item1", "volume": 0.45, "pitch": 1.1, "preload": true},
+    {"name": "minecraft:entity/itemframe/add_item2", "volume": 0.45, "pitch": 1.1, "preload": true},
+    {"name": "minecraft:entity/itemframe/add_item3", "volume": 0.45, "pitch": 1.1, "preload": true},
+    {"name": "minecraft:entity/itemframe/add_item4", "volume": 0.45, "pitch": 1.1, "preload": true}
+  ] },
+  "reload_world": { "sounds": [
+    {"name": "minecraft:item/crossbow/quick_charge/quick3_1", "volume": 0.7, "pitch": 1.3},
+    {"name": "minecraft:item/crossbow/quick_charge/quick3_2", "volume": 0.7, "pitch": 1.3},
+    {"name": "minecraft:item/crossbow/quick_charge/quick3_3", "volume": 0.7, "pitch": 1.3}
+  ] },
+  "blink": { "sounds": [
+    {"name": "minecraft:mob/endermen/portal", "pitch": 1.55, "attenuation_distance": 24, "preload": true}
+  ] },
+  "blink_zip": { "sounds": [
+    {"name": "minecraft:entity/bobber/castfast", "volume": 0.45, "pitch": 1.3, "preload": true}
+  ] },
+  "blink_streak": { "sounds": [
+    {"name": "minecraft:item/trident/throw1", "volume": 0.5, "pitch": 1.6, "preload": true},
+    {"name": "minecraft:item/trident/throw2", "volume": 0.5, "pitch": 1.6, "preload": true}
+  ] },
+  "recall_start": { "sounds": [
+    {"name": "minecraft:mob/illusion_illager/mirror_move2", "pitch": 2.0, "attenuation_distance": 24, "preload": true}
+  ] },
+  "recall_flash": { "sounds": [
+    {"name": "minecraft:block/amethyst/break1", "volume": 0.85, "pitch": 1.05},
+    {"name": "minecraft:block/amethyst/break2", "volume": 0.85, "pitch": 1.05},
+    {"name": "minecraft:block/amethyst/break3", "volume": 0.85, "pitch": 1.05},
+    {"name": "minecraft:block/amethyst/break4", "volume": 0.85, "pitch": 1.05}
+  ] },
+  "recall_flash_burst": { "sounds": [
+    {"name": "minecraft:item/totem/use_totem", "volume": 0.22, "pitch": 1.45, "preload": true}
+  ] },
+  "recall_flash_boom": { "sounds": [
+    {"name": "minecraft:mob/warden/sonic_boom1", "volume": 0.45, "pitch": 2.0, "preload": true},
+    {"name": "minecraft:mob/warden/sonic_boom2", "volume": 0.45, "pitch": 2.0, "preload": true},
+    {"name": "minecraft:mob/warden/sonic_boom3", "volume": 0.45, "pitch": 2.0, "preload": true},
+    {"name": "minecraft:mob/warden/sonic_boom4", "volume": 0.45, "pitch": 2.0, "preload": true}
+  ] },
+  "recall_vortex": { "sounds": [
+    {"name": "minecraft:portal/travel", "volume": 0.6, "pitch": 1.5, "preload": true}
+  ] },
+  "recall_rewind": { "sounds": [
+    {"name": "minecraft:block/beacon/power2", "volume": 0.8, "pitch": 1.85, "attenuation_distance": 24, "preload": true},
+    {"name": "minecraft:block/beacon/power3", "volume": 0.8, "pitch": 1.85, "attenuation_distance": 24, "preload": true}
+  ] },
+  "recall_streak": { "sounds": [
+    {"name": "minecraft:mob/vex/charge1", "volume": 0.7, "pitch": 1.2},
+    {"name": "minecraft:mob/vex/charge2", "volume": 0.7, "pitch": 1.2}
+  ] },
+  "recall_tick": { "sounds": [
+    {"name": "minecraft:random/wood_click", "volume": 0.9, "preload": true}
+  ] },
+  "recall_tick_edge": { "sounds": [
+    {"name": "minecraft:note/hat", "volume": 0.35, "pitch": 1.8, "preload": true}
+  ] },
+  "recall_shimmer": { "sounds": [
+    {"name": "minecraft:note/icechime", "volume": 0.7}
+  ] },
+  "recall_star": { "sounds": [
+    {"name": "minecraft:block/amethyst_cluster/place1", "volume": 0.8, "pitch": 1.7},
+    {"name": "minecraft:block/amethyst_cluster/place2", "volume": 0.8, "pitch": 1.7},
+    {"name": "minecraft:block/amethyst_cluster/place3", "volume": 0.8, "pitch": 1.7},
+    {"name": "minecraft:block/amethyst_cluster/place4", "volume": 0.8, "pitch": 1.7}
+  ] },
+  "recall_catch": { "sounds": [
+    {"name": "minecraft:item/armor/equip_netherite1", "volume": 0.55, "pitch": 1.2}
+  ] },
+  "recall_arrive": { "sounds": [
+    {"name": "minecraft:mob/endermen/portal", "volume": 0.85, "pitch": 0.8}
+  ] },
+  "recall_arrive_whoomp": { "sounds": [
+    {"name": "minecraft:mob/illusion_illager/mirror_move1", "volume": 0.8, "pitch": 1.3}
+  ] },
+  "recall_arrive_thump": { "sounds": [
+    {"name": "minecraft:note/bd", "pitch": 0.75}
+  ] },
+  "recall_arrive_shine": { "sounds": [
+    {"name": "minecraft:block/amethyst/break1", "volume": 0.8, "pitch": 0.9},
+    {"name": "minecraft:block/amethyst/break2", "volume": 0.8, "pitch": 0.9},
+    {"name": "minecraft:block/amethyst/break3", "volume": 0.8, "pitch": 0.9},
+    {"name": "minecraft:block/amethyst/break4", "volume": 0.8, "pitch": 0.9}
+  ] },
+  "ult_ready": { "sounds": [
+    {"name": "minecraft:random/levelup", "pitch": 1.15}
+  ] },
+  "ult_ready_power": { "sounds": [
+    {"name": "minecraft:block/beacon/power2", "volume": 0.6, "pitch": 1.4},
+    {"name": "minecraft:block/beacon/power3", "volume": 0.6, "pitch": 1.4}
+  ] },
+  "ult_cast": { "sounds": [
+    {"name": "minecraft:mob/evocation_illager/cast2", "pitch": 1.3, "attenuation_distance": 24}
+  ] },
+  "ult_cast_surge": { "sounds": [
+    {"name": "minecraft:block/respawn_anchor/charge3", "volume": 0.6, "pitch": 1.25}
+  ] },
+  "bomb_throw": { "sounds": [
+    {"name": "minecraft:random/bow", "volume": 0.75, "pitch": 0.55, "attenuation_distance": 20}
+  ] },
+  "bomb_whoosh": { "sounds": [
+    {"name": "minecraft:item/trident/throw1", "volume": 0.8, "pitch": 1.25, "attenuation_distance": 32, "preload": true},
+    {"name": "minecraft:item/trident/throw2", "volume": 0.8, "pitch": 1.25, "attenuation_distance": 32, "preload": true}
+  ] },
+  "bomb_whir": { "sounds": [
+    {"name": "minecraft:mob/bee/loop5", "volume": 0.55, "pitch": 2.0, "attenuation_distance": 24, "preload": true}
+  ] },
+  "bomb_stick": { "sounds": [
+    {"name": "minecraft:random/bowhit2", "pitch": 0.9, "attenuation_distance": 32, "preload": true},
+    {"name": "minecraft:random/bowhit3", "pitch": 0.9, "attenuation_distance": 32, "preload": true}
+  ] },
+  "bomb_stick_thunk": { "sounds": [
+    {"name": "minecraft:block/lodestone/place1", "pitch": 1.1, "attenuation_distance": 32, "preload": true},
+    {"name": "minecraft:block/lodestone/place2", "pitch": 1.1, "attenuation_distance": 32, "preload": true},
+    {"name": "minecraft:block/lodestone/place3", "pitch": 1.1, "attenuation_distance": 32, "preload": true},
+    {"name": "minecraft:block/lodestone/place4", "pitch": 1.1, "attenuation_distance": 32, "preload": true}
+  ] },
+  "bomb_stick_clamp": { "sounds": [
+    {"name": "minecraft:block/lodestone/lock1", "pitch": 1.3, "attenuation_distance": 32, "preload": true},
+    {"name": "minecraft:block/lodestone/lock2", "pitch": 1.3, "attenuation_distance": 32, "preload": true}
+  ] },
+  "bomb_stick_goo": { "sounds": [
+    {"name": "minecraft:mob/slime/big3", "volume": 0.45, "pitch": 1.3, "attenuation_distance": 32},
+    {"name": "minecraft:mob/slime/big4", "volume": 0.45, "pitch": 1.3, "attenuation_distance": 32}
+  ] },
+  "bomb_fuse": { "sounds": [
+    {"name": "minecraft:mob/guardian/attack_loop", "attenuation_distance": 40, "preload": true}
+  ] },
+  "bomb_charge": { "sounds": [
+    {"name": "minecraft:mob/warden/sonic_charge1", "volume": 0.55, "pitch": 1.47, "attenuation_distance": 40, "preload": true},
+    {"name": "minecraft:mob/warden/sonic_charge2", "volume": 0.55, "pitch": 1.47, "attenuation_distance": 40, "preload": true},
+    {"name": "minecraft:mob/warden/sonic_charge3", "volume": 0.55, "pitch": 1.47, "attenuation_distance": 40, "preload": true},
+    {"name": "minecraft:mob/warden/sonic_charge4", "volume": 0.55, "pitch": 1.47, "attenuation_distance": 40, "preload": true}
+  ] },
+  "bomb_pulse": { "sounds": [
+    {"name": "minecraft:note/pling", "pitch": 1.5, "attenuation_distance": 48, "preload": true}
+  ] },
+  "bomb_pulse_bit": { "sounds": [
+    {"name": "minecraft:note/bit", "volume": 0.6, "pitch": 1.5, "attenuation_distance": 48, "preload": true}
+  ] },
+  "bomb_pulse_thump": { "sounds": [
+    {"name": "minecraft:note/bd", "volume": 0.9, "pitch": 0.9, "attenuation_distance": 48, "preload": true}
+  ] },
+  "bomb_pulse_wave": { "sounds": [
+    {"name": "minecraft:block/beacon/deactivate", "volume": 0.75, "pitch": 1.6, "attenuation_distance": 48, "preload": true}
+  ] },
+  "bomb_pulse_shimmer": { "sounds": [
+    {"name": "minecraft:block/amethyst_cluster/break1", "volume": 0.8, "pitch": 1.4, "attenuation_distance": 48, "preload": true},
+    {"name": "minecraft:block/amethyst_cluster/break2", "volume": 0.8, "pitch": 1.4, "attenuation_distance": 48, "preload": true},
+    {"name": "minecraft:block/amethyst_cluster/break3", "volume": 0.8, "pitch": 1.4, "attenuation_distance": 48, "preload": true},
+    {"name": "minecraft:block/amethyst_cluster/break4", "volume": 0.8, "pitch": 1.4, "attenuation_distance": 48, "preload": true}
+  ] },
+  "bomb_explode": { "sounds": [
+    {"name": "minecraft:random/explode1", "pitch": 0.85},
+    {"name": "minecraft:random/explode2", "pitch": 0.85},
+    {"name": "minecraft:random/explode3", "pitch": 0.85},
+    {"name": "minecraft:random/explode4", "pitch": 0.85}
+  ] },
+  "bomb_blast": { "sounds": [
+    {"name": "minecraft:mob/warden/sonic_boom1", "volume": 0.6, "pitch": 1.25, "attenuation_distance": 64},
+    {"name": "minecraft:mob/warden/sonic_boom2", "volume": 0.6, "pitch": 1.25, "attenuation_distance": 64},
+    {"name": "minecraft:mob/warden/sonic_boom3", "volume": 0.6, "pitch": 1.25, "attenuation_distance": 64},
+    {"name": "minecraft:mob/warden/sonic_boom4", "volume": 0.6, "pitch": 1.25, "attenuation_distance": 64}
+  ] },
+  "bomb_shock": { "sounds": [
+    {"name": "minecraft:fireworks/largeblast1", "volume": 0.7, "pitch": 1.3, "attenuation_distance": 64}
+  ] },
+  "bomb_zap": { "sounds": [
+    {"name": "minecraft:block/respawn_anchor/deplete1", "volume": 0.6, "pitch": 1.2, "attenuation_distance": 48},
+    {"name": "minecraft:block/respawn_anchor/deplete2", "volume": 0.6, "pitch": 1.2, "attenuation_distance": 48}
+  ] },
+  "bomb_crackle": { "sounds": [
+    {"name": "minecraft:fireworks/twinkle_far1", "volume": 0.65, "pitch": 1.3, "attenuation_distance": 48}
+  ] },
+  "bomb_crackle2": { "sounds": [
+    {"name": "minecraft:fireworks/twinkle1", "volume": 0.5, "pitch": 1.5, "attenuation_distance": 48}
+  ] },
+  "bomb_spark": { "sounds": [
+    {"name": "minecraft:fire/ignite", "volume": 0.6, "pitch": 1.6, "attenuation_distance": 32}
+  ] },
+  "hit": { "sounds": [
+    {"name": "minecraft:random/orb", "volume": 0.22, "pitch": 1.2, "preload": true}
+  ] },
+  "hit_crit": { "sounds": [
+    {"name": "minecraft:random/orb", "volume": 0.35, "pitch": 0.8, "preload": true}
+  ] },
+  "hit_crit_crunch": { "sounds": [
+    {"name": "minecraft:entity/player/attack/crit1", "volume": 0.3, "pitch": 1.25, "preload": true},
+    {"name": "minecraft:entity/player/attack/crit2", "volume": 0.3, "pitch": 1.25, "preload": true},
+    {"name": "minecraft:entity/player/attack/crit3", "volume": 0.3, "pitch": 1.25, "preload": true}
+  ] },
+  "kill": { "sounds": [
+    {"name": "minecraft:block/bone_block/break1", "volume": 0.8, "preload": true},
+    {"name": "minecraft:block/bone_block/break2", "volume": 0.8, "preload": true}
+  ] },
+  "kill_ding": { "sounds": [
+    {"name": "minecraft:random/orb", "volume": 0.45, "preload": true}
+  ] },
+  "multikill": { "sounds": [
+    {"name": "minecraft:fireworks/blast1", "volume": 0.7, "pitch": 1.3}
+  ] },
+  "hurt_thud": { "sounds": [
+    {"name": "minecraft:damage/fallsmall", "volume": 0.5, "pitch": 0.8}
+  ] },
+  "lowhp_enter": { "sounds": [
+    {"name": "minecraft:block/beacon/deactivate", "volume": 0.8}
+  ] },
+  "lowhp_heartbeat_1": { "sounds": [
+    {"name": "minecraft:mob/warden/heartbeat_1", "volume": 0.45, "preload": true}
+  ] },
+  "lowhp_heartbeat_2": { "sounds": [
+    {"name": "minecraft:mob/warden/heartbeat_2", "volume": 0.45, "preload": true}
+  ] },
+  "lowhp_heartbeat_3": { "sounds": [
+    {"name": "minecraft:mob/warden/heartbeat_3", "volume": 0.45, "preload": true}
+  ] },
+  "lowhp_heartbeat_4": { "sounds": [
+    {"name": "minecraft:mob/warden/heartbeat_4", "volume": 0.45, "preload": true}
+  ] },
+  "blink_ready": { "sounds": [
+    {"name": "minecraft:block/amethyst/place1", "pitch": 1.9},
+    {"name": "minecraft:block/amethyst/place2", "pitch": 1.9},
+    {"name": "minecraft:block/amethyst/place3", "pitch": 1.9},
+    {"name": "minecraft:block/amethyst/place4", "pitch": 1.9}
+  ] },
+  "blink_ready_chime": { "sounds": [
+    {"name": "minecraft:note/icechime", "volume": 0.3, "pitch": 1.8}
+  ] },
+  "recall_ready": { "sounds": [
+    {"name": "minecraft:block/amethyst/resonate1", "pitch": 1.2},
+    {"name": "minecraft:block/amethyst/resonate2", "pitch": 1.2}
+  ] },
+  "recall_ready_bell": { "sounds": [
+    {"name": "minecraft:note/bell", "volume": 0.4, "pitch": 1.19}
+  ] },
+  "bot_shot": { "sounds": [
+    {"name": "minecraft:entity/shulker/shoot2", "volume": 0.5, "pitch": 1.35, "attenuation_distance": 32, "preload": true},
+    {"name": "minecraft:entity/shulker/shoot2", "volume": 0.5, "pitch": 1.45, "attenuation_distance": 32, "preload": true}
+  ] },
+  "bot_shot_piston": { "sounds": [
+    {"name": "minecraft:tile/piston/out", "volume": 0.3, "pitch": 1.7, "attenuation_distance": 32, "preload": true}
+  ] },
+  "bot_rocket_launch": { "sounds": [
+    {"name": "minecraft:mob/ghast/fireball4", "volume": 0.5, "pitch": 1.3, "attenuation_distance": 40}
+  ] },
+  "bot_rocket_fire": { "sounds": [
+    {"name": "minecraft:fireworks/launch1", "volume": 0.8, "pitch": 1.3, "attenuation_distance": 40}
+  ] },
+  "bot_rocket_whoosh": { "sounds": [
+    {"name": "minecraft:fireworks/launch1", "volume": 0.45, "pitch": 1.7, "attenuation_distance": 10, "preload": true}
+  ] },
+  "bot_rocket_blast": { "sounds": [
+    {"name": "minecraft:random/explode1", "volume": 0.3, "pitch": 1.5, "attenuation_distance": 32},
+    {"name": "minecraft:random/explode2", "volume": 0.3, "pitch": 1.5, "attenuation_distance": 32},
+    {"name": "minecraft:random/explode3", "volume": 0.3, "pitch": 1.5, "attenuation_distance": 32},
+    {"name": "minecraft:random/explode4", "volume": 0.3, "pitch": 1.5, "attenuation_distance": 32}
+  ] },
+  "bot_rocket_pop": { "sounds": [
+    {"name": "minecraft:fireworks/blast1", "volume": 0.6, "pitch": 1.1, "attenuation_distance": 32}
+  ] },
+  "bot_whiz": { "sounds": [
+    {"name": "minecraft:item/trident/throw1", "volume": 0.5, "pitch": 1.9, "attenuation_distance": 10, "preload": true},
+    {"name": "minecraft:item/trident/throw2", "volume": 0.5, "pitch": 1.9, "attenuation_distance": 10, "preload": true}
+  ] },
+  "bot_whiz_air": { "sounds": [
+    {"name": "minecraft:random/bow", "volume": 0.4, "pitch": 1.9, "attenuation_distance": 10, "preload": true}
+  ] },
+  "bot_impact": { "sounds": [
+    {"name": "minecraft:entity/shulker_bullet/hit1", "volume": 0.6, "pitch": 1.2, "attenuation_distance": 8, "preload": true},
+    {"name": "minecraft:entity/shulker_bullet/hit4", "volume": 0.6, "pitch": 1.2, "attenuation_distance": 8, "preload": true}
+  ] },
+  "bot_impact_bot": { "sounds": [
+    {"name": "minecraft:mob/irongolem/hit1", "volume": 0.3, "pitch": 1.6, "attenuation_distance": 16},
+    {"name": "minecraft:mob/irongolem/hit2", "volume": 0.3, "pitch": 1.6, "attenuation_distance": 16},
+    {"name": "minecraft:mob/irongolem/hit3", "volume": 0.3, "pitch": 1.6, "attenuation_distance": 16},
+    {"name": "minecraft:mob/irongolem/hit4", "volume": 0.3, "pitch": 1.6, "attenuation_distance": 16}
+  ] },
+  "bot_break_crack": { "sounds": [
+    {"name": "minecraft:mob/irongolem/damage1", "volume": 0.6, "pitch": 1.2, "attenuation_distance": 40},
+    {"name": "minecraft:mob/irongolem/damage2", "volume": 0.6, "pitch": 1.2, "attenuation_distance": 40}
+  ] },
+  "bot_break": { "sounds": [
+    {"name": "minecraft:mob/irongolem/death", "volume": 0.45, "pitch": 1.1, "attenuation_distance": 40}
+  ] },
+  "bot_break_snap": { "sounds": [
+    {"name": "minecraft:random/break", "volume": 0.5, "pitch": 0.9, "attenuation_distance": 40}
+  ] },
+  "bot_break_glass": { "sounds": [
+    {"name": "minecraft:random/glass1", "volume": 0.5, "pitch": 1.2, "attenuation_distance": 32},
+    {"name": "minecraft:random/glass2", "volume": 0.5, "pitch": 1.2, "attenuation_distance": 32},
+    {"name": "minecraft:random/glass3", "volume": 0.5, "pitch": 1.2, "attenuation_distance": 32}
+  ] },
+  "bot_break_zap": { "sounds": [
+    {"name": "minecraft:block/sculk_sensor/sculk_clicking1", "volume": 0.55, "pitch": 1.3, "attenuation_distance": 32}
+  ] },
+  "bot_debris": { "sounds": [
+    {"name": "minecraft:random/anvil_land", "volume": 0.25, "pitch": 1.8, "attenuation_distance": 24}
+  ] },
+  "bot_arc": { "sounds": [
+    {"name": "minecraft:block/sculk_sensor/sculk_clicking1", "volume": 0.45, "pitch": 1.5, "attenuation_distance": 20}
+  ] },
+  "bot_fizz": { "sounds": [
+    {"name": "minecraft:random/fizz", "volume": 0.35, "pitch": 1.8, "attenuation_distance": 20}
+  ] },
+  "bot_holo_on": { "sounds": [
+    {"name": "minecraft:block/end_portal/eyeplace1", "volume": 0.5, "pitch": 1.2, "attenuation_distance": 32},
+    {"name": "minecraft:block/end_portal/eyeplace2", "volume": 0.5, "pitch": 1.2, "attenuation_distance": 32},
+    {"name": "minecraft:block/end_portal/eyeplace3", "volume": 0.5, "pitch": 1.2, "attenuation_distance": 32}
+  ] },
+  "bot_holo_hum": { "sounds": [
+    {"name": "minecraft:block/beacon/activate", "volume": 0.7, "pitch": 1.4, "attenuation_distance": 32}
+  ] },
+  "bot_holo_sparkle": { "sounds": [
+    {"name": "minecraft:block/enchantment_table/enchant1", "volume": 0.55, "pitch": 1.2, "attenuation_distance": 32},
+    {"name": "minecraft:block/enchantment_table/enchant2", "volume": 0.55, "pitch": 1.2, "attenuation_distance": 32},
+    {"name": "minecraft:block/enchantment_table/enchant3", "volume": 0.55, "pitch": 1.2, "attenuation_distance": 32}
+  ] },
+  "bot_rebuilt": { "sounds": [
+    {"name": "minecraft:mob/irongolem/repair", "volume": 0.7, "pitch": 1.1, "attenuation_distance": 32}
+  ] },
+  "melee_swing": { "sounds": [
+    {"name": "minecraft:entity/player/attack/sweep2", "volume": 0.4, "pitch": 1.2, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:entity/player/attack/sweep5", "volume": 0.4, "pitch": 1.2, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:entity/player/attack/sweep6", "volume": 0.4, "pitch": 1.2, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:entity/player/attack/sweep7", "volume": 0.4, "pitch": 1.2, "attenuation_distance": 16, "preload": true}
+  ] },
+  "melee_swing_start": { "sounds": [
+    {"name": "minecraft:entity/player/attack/weak1", "volume": 0.35, "pitch": 1.1, "preload": true},
+    {"name": "minecraft:entity/player/attack/weak3", "volume": 0.35, "pitch": 1.1, "preload": true}
+  ] },
+  "melee_hit": { "sounds": [
+    {"name": "minecraft:item/shield/block1", "volume": 0.4, "pitch": 0.9, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:item/shield/block2", "volume": 0.4, "pitch": 0.9, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:item/shield/block3", "volume": 0.4, "pitch": 0.9, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:item/shield/block4", "volume": 0.4, "pitch": 0.9, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:item/shield/block5", "volume": 0.4, "pitch": 0.9, "attenuation_distance": 16, "preload": true}
+  ] },
+  "melee_hit_punch": { "sounds": [
+    {"name": "minecraft:entity/player/attack/strong1", "volume": 0.45, "preload": true},
+    {"name": "minecraft:entity/player/attack/strong3", "volume": 0.45, "preload": true},
+    {"name": "minecraft:entity/player/attack/strong6", "volume": 0.45, "preload": true}
+  ] },
+  "melee_hit_sub": { "sounds": [
+    {"name": "minecraft:note/bd", "volume": 0.5, "pitch": 0.8, "preload": true}
+  ] },
+  "melee_hit_metal": { "sounds": [
+    {"name": "minecraft:mob/zombie/metal1", "volume": 0.25, "pitch": 1.3, "attenuation_distance": 20, "preload": true},
+    {"name": "minecraft:mob/zombie/metal2", "volume": 0.25, "pitch": 1.3, "attenuation_distance": 20, "preload": true},
+    {"name": "minecraft:mob/zombie/metal3", "volume": 0.25, "pitch": 1.3, "attenuation_distance": 20, "preload": true}
+  ] },
+  "health_pack_pickup": { "sounds": [
+    {"name": "minecraft:random/pop", "volume": 0.9, "pitch": 1.15, "attenuation_distance": 16, "preload": true}
+  ] },
+  "health_pack_respawn": { "sounds": [
+    {"name": "minecraft:item/trident/return1", "pitch": 1.4, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:item/trident/return2", "pitch": 1.4, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:item/trident/return3", "pitch": 1.4, "attenuation_distance": 16, "preload": true}
+  ] },
+  "pick_hover": { "sounds": [
+    {"name": "minecraft:entity/itemframe/rotate_item1", "volume": 0.8, "pitch": 1.4, "preload": true},
+    {"name": "minecraft:entity/itemframe/rotate_item2", "volume": 0.8, "pitch": 1.4, "preload": true},
+    {"name": "minecraft:entity/itemframe/rotate_item3", "volume": 0.8, "pitch": 1.4, "preload": true},
+    {"name": "minecraft:entity/itemframe/rotate_item4", "volume": 0.8, "pitch": 1.4, "preload": true}
+  ] },
+  "pick_select_click": { "sounds": [
+    {"name": "minecraft:entity/itemframe/place1", "volume": 0.8, "pitch": 1.1, "preload": true},
+    {"name": "minecraft:entity/itemframe/place4", "volume": 0.8, "pitch": 1.1, "preload": true}
+  ] },
+  "pick_select_thump": { "sounds": [
+    {"name": "minecraft:note/bd", "volume": 0.8, "pitch": 0.75, "preload": true}
+  ] },
+  "pick_select_lock": { "sounds": [
+    {"name": "minecraft:block/end_portal/eyeplace1", "volume": 0.9, "preload": true},
+    {"name": "minecraft:block/end_portal/eyeplace2", "volume": 0.9, "preload": true}
+  ] },
+  "pick_select_fire": { "sounds": [
+    {"name": "minecraft:mob/ghast/fireball4", "volume": 0.55, "pitch": 1.3, "preload": true}
+  ] },
+  "pick_select_chime": { "sounds": [
+    {"name": "minecraft:note/bell", "volume": 0.5, "pitch": 0.9, "preload": true}
+  ] },
+  "pick_select_glow": { "sounds": [
+    {"name": "minecraft:block/beacon/activate", "volume": 0.4, "pitch": 1.1}
+  ] },
+  "pick_confirm_equip": { "sounds": [
+    {"name": "minecraft:item/armor/equip_netherite1", "volume": 0.8, "preload": true},
+    {"name": "minecraft:item/armor/equip_netherite3", "volume": 0.8, "preload": true}
+  ] },
+  "pick_confirm_thump": { "sounds": [
+    {"name": "minecraft:note/bd", "volume": 0.8, "pitch": 0.7, "preload": true}
+  ] },
+  "pick_confirm_power": { "sounds": [
+    {"name": "minecraft:block/beacon/power2", "volume": 0.6, "pitch": 1.3},
+    {"name": "minecraft:block/beacon/power3", "volume": 0.6, "pitch": 1.3}
+  ] },
+  "pick_open": { "sounds": [
+    {"name": "minecraft:ui/toast/in"}
+  ] },
+  "pick_close": { "sounds": [
+    {"name": "minecraft:ui/toast/out"}
+  ] },
+  "perk_open": { "sounds": [
+    {"name": "minecraft:block/enderchest/open", "volume": 0.38, "pitch": 1.4}
+  ] },
+  "perk_swish": { "sounds": [
+    {"name": "minecraft:item/armor/equip_leather2", "volume": 0.8, "pitch": 1.3, "preload": true},
+    {"name": "minecraft:item/armor/equip_leather4", "volume": 0.8, "pitch": 1.3, "preload": true},
+    {"name": "minecraft:item/armor/equip_leather6", "volume": 0.8, "pitch": 1.3, "preload": true}
+  ] },
+  "perk_close": { "sounds": [
+    {"name": "minecraft:block/enderchest/close", "volume": 0.17, "pitch": 1.6}
+  ] },
+  "perk_pick_tick": { "sounds": [
+    {"name": "minecraft:note/xylobone", "pitch": 1.2, "preload": true}
+  ] },
+  "perk_pick_thump": { "sounds": [
+    {"name": "minecraft:note/bd", "volume": 0.55, "pitch": 0.8, "preload": true}
+  ] },
+  "perk_pick_enchant": { "sounds": [
+    {"name": "minecraft:block/enchantment_table/enchant2", "pitch": 1.15}
+  ] },
+  "perk_slot": { "sounds": [
+    {"name": "minecraft:block/chiseled_bookshelf/insert_enchanted1", "pitch": 1.25, "preload": true},
+    {"name": "minecraft:block/chiseled_bookshelf/insert_enchanted3", "pitch": 1.25, "preload": true}
+  ] },
+  "perk_toast": { "sounds": [
+    {"name": "minecraft:ui/toast/in", "pitch": 1.3}
+  ] },
+  "perk_toast_equip": { "sounds": [
+    {"name": "minecraft:item/armor/equip_gold1", "volume": 0.85, "pitch": 1.3},
+    {"name": "minecraft:item/armor/equip_gold3", "volume": 0.85, "pitch": 1.3},
+    {"name": "minecraft:item/armor/equip_gold4", "volume": 0.85, "pitch": 1.3}
+  ] },
+  "perk_avail_note": { "sounds": [
+    {"name": "minecraft:note/iron_xylophone", "volume": 0.25, "preload": true}
+  ] },
+  "health_pack_liquid": { "sounds": [
+    {"name": "minecraft:item/bottle/fill1", "pitch": 1.5, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:item/bottle/fill2", "pitch": 1.5, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:item/bottle/fill3", "pitch": 1.5, "attenuation_distance": 16, "preload": true}
+  ] },
+  "health_pack_heal": { "sounds": [
+    {"name": "minecraft:note/harp2", "volume": 0.75, "attenuation_distance": 16, "preload": true}
+  ] },
+  "health_pack_sparkle": { "sounds": [
+    {"name": "minecraft:block/amethyst/step1", "pitch": 1.4, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:block/amethyst/step2", "pitch": 1.4, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:block/amethyst/step5", "pitch": 1.4, "attenuation_distance": 16, "preload": true},
+    {"name": "minecraft:block/amethyst/step9", "pitch": 1.4, "attenuation_distance": 16, "preload": true}
+  ] },
+  "health_pack_thump": { "sounds": [
+    {"name": "minecraft:note/bd", "volume": 0.45, "pitch": 0.75, "attenuation_distance": 16, "preload": true}
+  ] }
+}

@@ -48,6 +48,17 @@ final class OverwatchHud {
         if (pl.maxShield() > 0) { drawRow(g, bx, ry, cw, 5, pl.shield(), pl.maxShield(), SHIELD, 0x554DB8FF); }
         g.drawText(tr, String.valueOf(hpOw + pl.armor() + pl.shield()), bx, by - 14 - (rows - 1) * 7, WHITE, true);
 
+        // 퍽 경험치 바 + 선택 알림
+        var pk = MineWatchClient.perk;
+        if (pk.next() > 0) {
+            int px = 20, py = h - 20, pw = 150;
+            g.fill(px - 1, py - 1, px + pw + 1, py + 4, DARK);
+            g.fill(px, py, px + Math.min(pw, Math.round(pw * pk.xp() / (float) pk.next())), py + 3, pk.stage() == 1 || pk.stage() == 3 ? ORANGE : 0xFF8FB4D8);
+        }
+        if (pk.stage() == 1 || pk.stage() == 3) {
+            if ((System.currentTimeMillis() / 500) % 2 == 0) g.drawText(tr, Text.translatable("hud.minewatch.perk_available"), 20, h - 32 - 12 * 3, ORANGE, true);
+        }
+
         // 탄약 (우하단): 탄창이 있는 영웅만
         if (s.maxAmmo() > 0) {
             String ammo = s.reloading() ? "RELOAD" : s.ammo() + " / " + s.maxAmmo();

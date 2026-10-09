@@ -53,7 +53,7 @@ public class Roadhog extends Hero {
         // 숨 돌리기: 일정 시간 치유 + 받는 피해 감소
         if (s.timer > 0) {
             s.timer--;
-            double healed = HeroKit.heal(p, BREATHER_HEAL_PER_TICK);
+            double healed = HeroKit.heal(p, BREATHER_HEAL_PER_TICK * s.healMult);
             if (healed > 0 && p.age % 5 == 0) w.spawnParticles(ParticleTypes.HAPPY_VILLAGER, p.getX(), p.getY() + 1.0, p.getZ(), 2, 0.3, 0.5, 0.3, 0);
         }
         if (s.pressed(InputPayload.ABILITY1) && s.cd[0] == 0 && s.timer == 0) {
@@ -67,7 +67,7 @@ public class Roadhog extends Hero {
         if (hog) gun.ammo = HOG.maxAmmo();                        // 돼지 대학살 중에는 탄약 무한
         else {
             gun.tickReload(GUN);
-            if (holding && (s.pressed(InputPayload.RELOAD) || gun.ammo == 0)) gun.startReload(GUN);
+            if (holding && (s.pressed(InputPayload.RELOAD) || gun.ammo == 0)) gun.startReload(GUN, s.reloadSpeed);
         }
         boolean canFire = holding && s.held(InputPayload.FIRE) && (hog || gun.reload == 0);
         int shots = gun.shots(spec, canFire);

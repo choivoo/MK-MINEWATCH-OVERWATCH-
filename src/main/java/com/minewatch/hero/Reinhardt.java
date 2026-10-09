@@ -69,7 +69,7 @@ public class Reinhardt extends Hero {
 
     private void swing(ServerPlayerEntity p, State s, ServerWorld w) {
         s.cd[2] = SWING_COOLDOWN;
-        w.playSound(null, p.getBlockPos(), SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 1.0f, 0.7f);
+        com.minewatch.server.Sfx.at(p, "melee_swing", 1f, 1f);
         for (LivingEntity e : HeroKit.inCone(p, SWING_RANGE, SWING_HALF_ANGLE, x -> HeroKit.isEnemy(p, x)))
             s.addUlt(this, OwDamage.deal(p, e, SWING_DAMAGE, false, true));
     }

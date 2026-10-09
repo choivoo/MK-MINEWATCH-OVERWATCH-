@@ -64,7 +64,7 @@ public class Widowmaker extends Hero {
         } else s.charge = 0;
 
         s.gun.tickReload(SMG);
-        if (holding && (s.pressed(InputPayload.RELOAD) || s.gun.ammo == 0)) s.gun.startReload(SMG);
+        if (holding && (s.pressed(InputPayload.RELOAD) || s.gun.ammo == 0)) s.gun.startReload(SMG, s.reloadSpeed);
 
         if (scoped) {
             // 저격: 충전량에 따라 12~120, 헤드샷 x2.5

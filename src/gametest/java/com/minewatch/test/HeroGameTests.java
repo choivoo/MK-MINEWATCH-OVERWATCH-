@@ -281,4 +281,52 @@ public class HeroGameTests implements FabricGameTest {
         check(p.getMaxHealth() == 20, "해제 후 체력이 바닐라로 돌아오지 않음");
         ctx.complete();
     }
+
+    @GameTest(batchId = "h8", templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 100)
+    public void perkChoiceIsValidatedAndApplied(TestContext ctx) {
+        ServerPlayerEntity p = player(ctx, HeroRegistry.ANA, 3.5, 1.5, 0f);
+        HeroState s = HeroManager.stateOf(p);
+        com.minewatch.server.PerkManager.choose(p, "ana:quick_reload");
+        check(s.reloadSpeed == 1.0, "경험치 없이 퍽이 선택됨");
+
+        s.perk.addXp(com.minewatch.hero.PerkProgress.MINOR_XP);
+        com.minewatch.server.PerkManager.choose(p, "ana:cd_primary");       // 메이저 퍽은 아직 불가
+        com.minewatch.server.PerkManager.choose(p, "mercy:fleet");          // 다른 영웅의 퍽 불가
+        check(s.reloadSpeed == 1.0 && s.speedAmp < 0 && s.perk.stage == 1, "잘못된 선택이 받아들여짐");
+
+        com.minewatch.server.PerkManager.choose(p, "ana:quick_reload");
+        check(Math.abs(s.reloadSpeed - 1.3) < 1e-9 && s.perk.stage == 2, "올바른 마이너 퍽이 적용되지 않음");
+        com.minewatch.server.PerkManager.choose(p, "ana:potent_heal");      // 같은 단계에서 두 번째 선택 불가
+        check(s.healMult == 1.0, "마이너 퍽을 두 번 고름");
+
+        s.perk.addXp(com.minewatch.hero.PerkProgress.MAJOR_XP);
+        com.minewatch.server.PerkManager.choose(p, "ana:ult_gain");
+        check(Math.abs(s.ultGainMult - 1.25) < 1e-9 && s.perk.stage == 4, "메이저 퍽이 적용되지 않음");
+        ctx.complete();
+    }
+
+    @GameTest(batchId = "h9", templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 100)
+    public void killPerksAndHealthPerks(TestContext ctx) {
+        ServerPlayerEntity p = player(ctx, HeroRegistry.TRACER, 3.5, 1.5, 0f);
+        com.minewatch.hero.TracerState t = (com.minewatch.hero.TracerState) HeroManager.stateOf(p);
+        com.minewatch.hero.Perks.apply(t, com.minewatch.hero.Perks.find("tracer:kinetic_reload"));
+        t.ammo = 0;
+        com.minewatch.server.PerkManager.onKill(p);
+        check(t.ammo == com.minewatch.hero.Tracer.MAX_AMMO, "처치 시 즉시 재장전되지 않음");
+
+        ServerPlayerEntity hog = player(ctx, HeroRegistry.ROADHOG, 3.5, 1.5, 0f);
+        HeroState hs = HeroManager.stateOf(hog);
+        com.minewatch.hero.Perks.apply(hs, com.minewatch.hero.Perks.find("roadhog:thick_skin"));
+        HeroManager.applyMaxHealth(hog);
+        check(Math.abs(hog.getMaxHealth() * Hero.HP_SCALE - 750) < 0.5, "최대 체력이 750 OW 가 아님: " + hog.getMaxHealth() * Hero.HP_SCALE);
+        ctx.complete();
+    }
+
+    @GameTest(batchId = "h10", templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 40)
+    public void soundEventsAreRegistered(TestContext ctx) {
+        check(com.minewatch.ModSounds.count() > 100, "사운드 이벤트가 등록되지 않음: " + com.minewatch.ModSounds.count());
+        for (String n : new String[]{"pulse_fire_crack", "blink", "recall_start", "kill", "perk_avail_note", "ult_ready"})
+            check(com.minewatch.ModSounds.get(n) != null, "이벤트 누락: " + n);
+        ctx.complete();
+    }
 }

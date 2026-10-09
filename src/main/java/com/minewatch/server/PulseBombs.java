@@ -39,7 +39,7 @@ public final class PulseBombs {
         b.pos = p.getEyePos().add(look.multiply(0.5));
         b.vel = look.multiply(SPEED).add(0, LIFT, 0);
         BOMBS.add(b);
-        b.world.playSound(null, p.getBlockPos(), SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.PLAYERS, 1f, 0.8f);
+        Sfx.at(p, "bomb_throw", 1f, 1f);
     }
 
     public static void clear() { BOMBS.clear(); }
@@ -86,14 +86,14 @@ public final class PulseBombs {
     private static void stick(Bomb b, Vec3d at, Entity e) {
         b.stuck = true; b.pos = at; b.vel = Vec3d.ZERO;
         if (e != null) { b.stuckTo = e.getUuid(); b.stuckOffset = at.subtract(e.getPos()); }
-        b.world.playSound(null, at.x, at.y, at.z, SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS, 1f, 1.5f);
+        Sfx.at(b.world, at.x, at.y, at.z, "bomb_stick", 1f, 1f);
     }
 
     private static void explode(Bomb b, ServerPlayerEntity owner) {
         Vec3d c = b.pos;
         b.world.spawnParticles(ParticleTypes.EXPLOSION_EMITTER, c.x, c.y, c.z, 1, 0, 0, 0, 0);
         b.world.spawnParticles(ParticleTypes.END_ROD, c.x, c.y, c.z, 80, 1.5, 1.5, 1.5, 0.3);
-        b.world.playSound(null, c.x, c.y, c.z, SoundEvents.ENTITY_GENERIC_EXPLODE.value(), SoundCategory.PLAYERS, 2f, 1.2f);
+        Sfx.at(b.world, c.x, c.y, c.z, "bomb_explode", 1.5f, 1f);
         if (owner == null) return;
         Box area = new Box(c, c).expand(RADIUS);
         for (Entity e : b.world.getOtherEntities(owner, area, en -> en instanceof LivingEntity le && le.isAlive())) {

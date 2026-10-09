@@ -136,7 +136,7 @@ public final class MatchManager {
         target = targetValue; timeLimit = seconds * 20;
         teams.clear();
         List<ServerPlayerEntity> list = participants != null ? new java.util.ArrayList<>(participants) : server.getPlayerManager().getPlayerList();
-        for (ServerPlayerEntity p : list) { recordOrigin(p); assign(p); }
+        for (ServerPlayerEntity p : list) { recordOrigin(p); assign(p); HeroManager.reselect(p); }
         ServerWorld mw = map.world(server);
         if (mw != null) mw.setTimeOfDay(6000);   // 항상 낮에 시작
         state = COUNTDOWN; ticksLeft = COUNTDOWN_TICKS;
@@ -227,6 +227,7 @@ public final class MatchManager {
                 victim.getName().getString(), vt);
         for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) ServerPlayNetworking.send(p, kf);
         if (mode == MODE_TDM && killer != null && killer != victim && kt >= 0 && kt != vt) score[kt]++;
+        if (killer instanceof ServerPlayerEntity kp && killer != victim && kt >= 0 && kt != vt) PerkManager.onKill(kp);
     }
 
     public static void tick(MinecraftServer server) {

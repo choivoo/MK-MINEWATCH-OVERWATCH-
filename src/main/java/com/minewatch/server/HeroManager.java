@@ -28,6 +28,24 @@ public final class HeroManager {
         return e == null ? null : e.state;
     }
 
+    /** 영웅 기본 체력 + 퍽 보너스로 최대 체력을 맞춘다(늘어난 만큼은 즉시 채움). */
+    public static void applyMaxHealth(ServerPlayerEntity p) {
+        Entry e = ENTRIES.get(p.getUuid());
+        if (e == null) return;
+        double target = (e.hero.maxHealthOw() + e.state.bonusMaxHealthOw) / Hero.HP_SCALE;
+        EntityAttributeInstance a = p.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+        if (a == null) return;
+        double gain = target - a.getBaseValue();
+        a.setBaseValue(target);
+        if (gain > 0) p.setHealth((float) Math.min(target, p.getHealth() + gain));
+    }
+
+    /** 같은 영웅으로 상태를 새로 만든다(매치 시작 시 퍽/쿨다운 초기화). */
+    public static void reselect(ServerPlayerEntity p) {
+        Entry e = ENTRIES.get(p.getUuid());
+        if (e != null) select(p, e.hero);
+    }
+
     private static void setMaxHealth(ServerPlayerEntity p, double mc) {
         EntityAttributeInstance a = p.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
         if (a != null) a.setBaseValue(mc);
@@ -42,6 +60,7 @@ public final class HeroManager {
             setMaxHealth(p, 20);
             ServerPlayNetworking.send(p, StatePayload.NONE);
             ServerPlayNetworking.send(p, PoolsPayload.NONE);
+            ServerPlayNetworking.send(p, com.minewatch.net.PerkStatePayload.NONE);
             return;
         }
         Entry e = new Entry();
@@ -66,7 +85,7 @@ public final class HeroManager {
     /** 리스폰 후 새 플레이어 엔티티에 영웅 체력 설정을 다시 적용한다. */
     public static void onRespawn(ServerPlayerEntity p) {
         Entry e = ENTRIES.get(p.getUuid());
-        if (e != null) setMaxHealth(p, e.hero.maxHealthOw() / Hero.HP_SCALE);
+        if (e != null) setMaxHealth(p, (e.hero.maxHealthOw() + e.state.bonusMaxHealthOw) / Hero.HP_SCALE);
     }
 
     /** 접속 종료 시 마지막으로 쓰던 영웅을 기억해 두었다가 재접속하면 복원한다. */
@@ -99,6 +118,8 @@ public final class HeroManager {
             e.hero.tick(p, e.state);
             e.state.prevInput = e.state.input;
             notifyUlt(p, e);
+            if (e.state.speedAmp >= 0) p.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(net.minecraft.entity.effect.StatusEffects.SPEED, 3, e.state.speedAmp, false, false, false));
+            if (e.state.perk.dirty || p.age % 20 == 0) PerkManager.sync(p, e.state, e.hero);
             ServerPlayNetworking.send(p, e.hero.toPayload(e.state));
             var pl = e.state.pools;
             PoolsPayload pp = new PoolsPayload((int) Math.ceil(pl.armor), (int) pl.maxArmor, (int) Math.ceil(pl.shield), (int) pl.maxShield);
@@ -110,7 +131,7 @@ public final class HeroManager {
     private static void notifyUlt(ServerPlayerEntity p, Entry e) {
         boolean ready = e.state.ultPoints >= e.hero.ultCost();
         if (ready && !e.state.ultReady) {
-            p.playSoundToPlayer(SoundEvents.BLOCK_BEACON_POWER_SELECT, SoundCategory.PLAYERS, 0.8f, 1.4f);
+            Sfx.play(p, "ult_ready", 1f, 1f);
             p.sendMessage(Text.literal("궁극기 준비 완료!"), true);
         }
         e.state.ultReady = ready;

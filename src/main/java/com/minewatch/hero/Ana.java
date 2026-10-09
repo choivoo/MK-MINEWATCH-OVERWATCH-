@@ -47,7 +47,7 @@ public class Ana extends Hero {
         if (s.flag) p.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 3, 1, false, false, false));
 
         s.gun.tickReload(GUN);
-        if (holding && (s.pressed(InputPayload.RELOAD) || s.gun.ammo == 0)) s.gun.startReload(GUN);
+        if (holding && (s.pressed(InputPayload.RELOAD) || s.gun.ammo == 0)) s.gun.startReload(GUN, s.reloadSpeed);
         int shots = s.gun.shots(GUN, holding && s.held(InputPayload.FIRE) && s.gun.reload == 0);
         for (int i = 0; i < shots; i++) shoot(p, s, w);
 
@@ -64,8 +64,8 @@ public class Ana extends Hero {
         LivingEntity t = h.entity();
         if (t == null) { HeroKit.beam(w, from, h.point(), 0.6f, 0.4f, 1f, 0.6f); return; }
         if (HeroKit.isAlly(p, t)) {
-            double healed = HeroKit.heal(t, HEAL_SHOT * s.outMult());
-            s.addUlt(this, healed * 0.5);
+            double healed = HeroKit.heal(t, HEAL_SHOT * s.healOut());
+            s.addUlt(this, healed * 0.5); com.minewatch.server.PerkManager.addXp(p, healed);
             HeroKit.beam(w, from, h.point(), 0.3f, 1f, 0.5f, 0.8f);
         } else {
             s.addUlt(this, OwDamage.deal(p, t, GUN.damage(), false, false));
@@ -90,7 +90,7 @@ public class Ana extends Hero {
         w.spawnParticles(ParticleTypes.HAPPY_VILLAGER, at.x, at.y + 0.3, at.z, 25, GRENADE_RADIUS / 2, 0.4, GRENADE_RADIUS / 2, 0);
         w.playSound(null, at.x, at.y, at.z, SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS, 1.0f, 0.6f);
         for (LivingEntity e : HeroKit.inRadius(w, at, GRENADE_RADIUS, x -> HeroKit.isAlly(p, x) || x == p || HeroKit.isEnemy(p, x))) {
-            if (e == p || HeroKit.isAlly(p, e)) s.addUlt(this, HeroKit.heal(e, GRENADE_HEAL * s.outMult()) * 0.5);
+            if (e == p || HeroKit.isAlly(p, e)) s.addUlt(this, HeroKit.heal(e, GRENADE_HEAL * s.healOut()) * 0.5);
             else s.addUlt(this, OwDamage.deal(p, e, GRENADE_DAMAGE, false, false));
         }
     }

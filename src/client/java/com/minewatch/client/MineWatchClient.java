@@ -20,6 +20,7 @@ public class MineWatchClient implements ClientModInitializer {
     public static volatile StatePayload state = StatePayload.NONE;
     public static volatile com.minewatch.net.PoolsPayload pools = com.minewatch.net.PoolsPayload.NONE;
     public static volatile com.minewatch.net.QueuePayload queue = com.minewatch.net.QueuePayload.NONE;
+    public static volatile com.minewatch.net.PerkStatePayload perk = com.minewatch.net.PerkStatePayload.NONE;
 
     static final String CAT = "category.minewatch";
     static final KeyBinding ABILITY1 = key("key.minewatch.ability1", GLFW.GLFW_KEY_LEFT_SHIFT); // 블링크
@@ -28,6 +29,7 @@ public class MineWatchClient implements ClientModInitializer {
     static final KeyBinding RELOAD = key("key.minewatch.reload", GLFW.GLFW_KEY_R);
     static final KeyBinding MELEE = key("key.minewatch.melee", GLFW.GLFW_KEY_V);
     static final KeyBinding MENU = key("key.minewatch.menu", GLFW.GLFW_KEY_H);
+    static final KeyBinding PERK = key("key.minewatch.perk", GLFW.GLFW_KEY_G);
 
     private static KeyBinding key(String name, int code) {
         return KeyBindingHelper.registerKeyBinding(new KeyBinding(name, InputUtil.Type.KEYSYM, code, CAT));
@@ -38,7 +40,8 @@ public class MineWatchClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(StatePayload.ID, (payload, ctx) -> state = payload);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.PoolsPayload.ID, (payload, ctx) -> pools = payload);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.QueuePayload.ID, (payload, ctx) -> queue = payload);
-        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; pools = com.minewatch.net.PoolsPayload.NONE; queue = com.minewatch.net.QueuePayload.NONE; MatchHud.reset(); HudEffects.reset(); });
+        ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.PerkStatePayload.ID, (payload, ctx) -> perk = payload);
+        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; pools = com.minewatch.net.PoolsPayload.NONE; queue = com.minewatch.net.QueuePayload.NONE; perk = com.minewatch.net.PerkStatePayload.NONE; MatchHud.reset(); HudEffects.reset(); });
 
         // 영웅 활성 중에는 기본 조작(웅크리기/버리기)과 충돌하지 않도록 먼저 소비
         ClientTickEvents.START_CLIENT_TICK.register(mc -> {
@@ -101,6 +104,7 @@ public class MineWatchClient implements ClientModInitializer {
             if (ms != 0 && mc.currentScreen != null && mc.currentScreen.getClass().getPackageName().endsWith("client.screen")) mc.setScreen(null);
             if (mc.player == null || mc.world == null) return;
             while (MENU.wasPressed()) if (mc.currentScreen == null) mc.setScreen(new com.minewatch.client.screen.HomeScreen(null));
+            while (PERK.wasPressed()) if (mc.currentScreen == null && state.heroId() != 0) mc.setScreen(new com.minewatch.client.screen.PerkScreen());
             if (openLobby && mc.currentScreen == null && ms == 0) {
                 openLobby = false;
                 mc.setScreen(new com.minewatch.client.screen.HomeScreen(null));

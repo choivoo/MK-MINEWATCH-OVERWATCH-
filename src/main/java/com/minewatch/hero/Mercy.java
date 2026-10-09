@@ -82,7 +82,7 @@ public class Mercy extends Hero {
                 Vec3d to = t.getBoundingBox().getCenter();
                 if (heal) {
                     double healed = HeroKit.heal(t, HEAL_PER_TICK * (valkyrie ? VALKYRIE_HEAL_MULT : 1.0));
-                    s.addUlt(this, healed * 0.5);
+                    s.addUlt(this, healed * 0.5); com.minewatch.server.PerkManager.addXp(p, healed);
                     HeroKit.beam(w, from, to, 1f, 0.9f, 0.3f, 0.8f);
                 } else {
                     double amt = valkyrie ? VALKYRIE_BOOST + 0.1 : BOOST;

@@ -60,13 +60,14 @@ public final class OwDamage {
             toHealth = Math.max(0, before - target.getHealth()) * Hero.HP_SCALE;
         }
         double dealt = absorbed + toHealth;
+        if (dealt > 0 && attacker instanceof ServerPlayerEntity xp && target != attacker) PerkManager.addXp(xp, dealt);
         if (dealt > 0) {
             if (attacker instanceof ServerPlayerEntity sp) {
                 boolean kill = !target.isAlive();
                 ServerPlayNetworking.send(sp, new HitPayload(kill ? 2 : headshot ? 1 : 0));
-                if (kill) sp.playSoundToPlayer(SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.5f, 0.6f);
-                else if (headshot) sp.playSoundToPlayer(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.4f, 1.6f);
-                else if (sp.age % 3 == 0) sp.playSoundToPlayer(SoundEvents.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 0.25f, 1.0f);
+                if (kill) Sfx.play(sp, "kill", 0.7f, 1f);
+                else if (headshot) Sfx.play(sp, "hit_crit", 0.6f, 1f);
+                else if (sp.age % 3 == 0) Sfx.play(sp, "hit", 0.5f, 1f);
             }
             if (target instanceof ServerPlayerEntity tp && tp != attacker)
                 ServerPlayNetworking.send(tp, new DamageDirPayload(attacker.getX(), attacker.getZ()));

@@ -50,7 +50,7 @@ public class Soldier76 extends Hero {
         if (s.flag) p.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 3, 1, false, false, false));
 
         s.gun.tickReload(GUN);
-        if (holding && (s.pressed(InputPayload.RELOAD) || s.gun.ammo == 0)) s.gun.startReload(GUN);
+        if (holding && (s.pressed(InputPayload.RELOAD) || s.gun.ammo == 0)) s.gun.startReload(GUN, s.reloadSpeed);
 
         boolean canFire = firing && s.gun.reload == 0;
         int shots = s.gun.shots(GUN, canFire);

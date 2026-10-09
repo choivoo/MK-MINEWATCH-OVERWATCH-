@@ -40,7 +40,9 @@ public final class HealthPacks {
                 double dx = pl.getX() - k.pos.x, dz = pl.getZ() - k.pos.z;
                 if (dx * dx + dz * dz > RADIUS * RADIUS) continue;
                 OwHeal.heal(pl, k.large ? LARGE_HEAL : SMALL_HEAL);
-                pl.playSoundToPlayer(SoundEvents.ENTITY_PLAYER_LEVELUP, SoundCategory.PLAYERS, 0.4f, 1.8f);
+                var hs = HeroManager.stateOf(pl);
+                if (hs instanceof com.minewatch.hero.TracerState ts && ts.healpackBlink && ts.blinkCharges < com.minewatch.hero.Tracer.MAX_BLINK) ts.blinkCharges++;
+                Sfx.play(pl, "health_pack_pickup", 0.8f, 1f);
                 k.cooldown = RESPAWN_TICKS;
                 break;
             }

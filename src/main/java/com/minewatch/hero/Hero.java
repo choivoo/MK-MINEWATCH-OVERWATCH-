@@ -35,6 +35,8 @@ public abstract class Hero {
     /** 이 영웅이 플레이어 사망/해제 시 정리할 것이 있으면 구현. */
     public void onDeselect(ServerPlayerEntity player, HeroState state) {}
     public void onDeath(ServerPlayerEntity player, HeroState state) {}
+    /** 즉시 재장전(처치 퍽 등). */
+    public void reloadNow(ServerPlayerEntity player, HeroState state) { state.gun.refill(); }
 
     /**
      * 공통 틱 준비: 쿨다운/버프 감소, 자연 궁극기 충전.

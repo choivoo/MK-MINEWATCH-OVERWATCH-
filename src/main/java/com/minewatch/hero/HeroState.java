@@ -20,6 +20,15 @@ public class HeroState {
     public boolean flag;
     public int stunTicks;
 
+    // ---- 퍽 ----
+    public final PerkProgress perk = new PerkProgress();
+    public double dmgMult = 1, reloadSpeed = 1, healMult = 1, ultGainMult = 1;
+    public int speedAmp = -1;                          // -1 이면 이동 속도 퍽 없음
+    public final double[] cdRate = {1, 1, 1, 1};       // 능력 쿨다운 감소 속도 배율
+    private final double[] cdAcc = new double[4];
+    public boolean killReload, healpackBlink, recallFullHeal;
+    public double bonusMaxHealthOw;
+
     // ---- 버프/디버프 ----
     public double outBoost; public int outBoostTicks;     // 주는 피해/치유 증가
     public double inResist; public int inResistTicks;     // 받는 피해 감소
@@ -35,7 +44,12 @@ public class HeroState {
     /** 무적 상태(리콜 등)면 true. */
     public boolean invulnerable() { return false; }
 
-    public double outMult() { return outBoostTicks > 0 ? 1.0 + outBoost : 1.0; }
+    /** 버프(나노/증폭)만 반영한 배율. */
+    public double outBuff() { return outBoostTicks > 0 ? 1.0 + outBoost : 1.0; }
+    /** 주는 피해 배율 = 버프 x 퍽. */
+    public double outMult() { return outBuff() * dmgMult; }
+    /** 주는 치유 배율 = 버프 x 퍽. */
+    public double healOut() { return outBuff() * healMult; }
     public double inMult() { return inResistTicks > 0 ? 1.0 - inResist : 1.0; }
 
     public void boostOut(double amount, int ticks) {
@@ -49,14 +63,23 @@ public class HeroState {
 
     /** 매 틱: 쿨다운/버프/기절 타이머 감소. */
     public void tickEffects() {
-        for (int i = 0; i < cd.length; i++) if (cd[i] > 0) cd[i]--;
+        for (int i = 0; i < cd.length; i++) {
+            if (cd[i] <= 0) { cdAcc[i] = 0; continue; }
+            cdAcc[i] += cdRate[i];
+            int dec = (int) cdAcc[i];
+            cdAcc[i] -= dec;
+            cd[i] = Math.max(0, cd[i] - dec);
+        }
         if (outBoostTicks > 0) outBoostTicks--;
         if (inResistTicks > 0) inResistTicks--;
         if (stunTicks > 0) stunTicks--;
         if (barrierBroken > 0) barrierBroken--;
     }
 
-    public void addUlt(Hero h, double amount) { ultPoints = Math.min(h.ultCost(), ultPoints + Math.max(0, amount)); }
+    public void addUlt(Hero h, double amount) { ultPoints = Math.min(h.ultCost(), ultPoints + Math.max(0, amount) * ultGainMult); }
+
+    /** 퍽 경험치(주거나 치유한 양, 처치 보너스). */
+    public void addXp(double amount) { perk.addXp(amount); }
 
     /**
      * 정면 방벽이 올라가 있고 공격이 정면(좌우 halfAngleDeg 이내)에서 왔다면 방벽이 흡수한다.

@@ -91,7 +91,7 @@ public class Tracer extends Hero {
         if (holding && s.reloadTicks == 0 && s.held(InputPayload.FIRE) && s.ammo > 0) {
             s.bulletAcc += BULLETS_PER_TICK;
             while (s.bulletAcc >= 1 && s.ammo > 0) { s.bulletAcc -= 1; s.ammo--; fire(p, s, world); }
-            if (p.age % 2 == 0) world.playSound(null, p.getBlockPos(), SoundEvents.BLOCK_NOTE_BLOCK_HAT.value(), SoundCategory.PLAYERS, 0.5f, 1.5f);
+            if (p.age % 2 == 0) com.minewatch.server.Sfx.at(p, "pulse_fire_crack", 0.5f, 1f);
         } else s.bulletAcc = 0;
 
         if (s.pressed(InputPayload.ABILITY1)) blink(p, s, world);
@@ -105,7 +105,7 @@ public class Tracer extends Hero {
 
     private void startReload(ServerPlayerEntity p, TracerState s) {
         s.reloadTicks = RELOAD_TICKS;
-        p.getServerWorld().playSound(null, p.getBlockPos(), SoundEvents.ITEM_CROSSBOW_LOADING_END.value(), SoundCategory.PLAYERS, 0.8f, 1.4f);
+        com.minewatch.server.Sfx.at(p, "reload_open", 0.8f, 1f);
     }
 
     // ---- 펄스 쌍권총 (히트스캔) ----
@@ -183,7 +183,7 @@ public class Tracer extends Hero {
         p.setVelocity(p.getVelocity().multiply(0.2, 1, 0.2));
         p.velocityModified = true;
         world.spawnParticles(ParticleTypes.ELECTRIC_SPARK, start.x + ox, start.y + 1, start.z + oz, 20, 0.3, 0.6, 0.3, 0.2);
-        world.playSound(null, p.getBlockPos(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 0.6f, 1.8f);
+        com.minewatch.server.Sfx.at(p, "blink", 0.8f, 1f);
     }
 
     // ---- 리콜 ----
@@ -195,9 +195,9 @@ public class Tracer extends Hero {
         s.recalling = true;
         s.recallOrigin = p.getPos();
         s.recallTicks = 0;
-        s.recallCooldown = RECALL_COOLDOWN;
+        s.recallCooldown = (int) Math.round(RECALL_COOLDOWN / s.cdRate[1]);
         s.reloadTicks = 0;
-        world.playSound(null, p.getBlockPos(), SoundEvents.BLOCK_BEACON_POWER_SELECT, SoundCategory.PLAYERS, 1f, 0.6f);
+        com.minewatch.server.Sfx.at(p, "recall_start", 1f, 1f);
     }
 
     private void tickRecall(ServerPlayerEntity p, TracerState s, ServerWorld world) {
@@ -220,10 +220,10 @@ public class Tracer extends Hero {
         }
         if (s.history.isEmpty()) {
             s.recalling = false;
-            p.setHealth(Math.max(p.getHealth(), s.recallHealth));
+            p.setHealth(s.recallFullHeal ? p.getMaxHealth() : Math.max(p.getHealth(), s.recallHealth));
             s.ammo = MAX_AMMO;
             world.spawnParticles(ParticleTypes.END_ROD, o.x, o.y + 1, o.z, 30, 0.1, 0.1, 0.1, 0.25);
-            world.playSound(null, p.getBlockPos(), SoundEvents.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS, 1f, 1.5f);
+            com.minewatch.server.Sfx.at(p, "recall_arrive", 1f, 1f);
         }
     }
 
@@ -248,6 +248,12 @@ public class Tracer extends Hero {
     }
 
     public boolean isRecalling(HeroState hs) { return ((TracerState) hs).recalling; }
+
+    @Override
+    public void reloadNow(ServerPlayerEntity p, HeroState hs) {
+        TracerState s = (TracerState) hs;
+        s.ammo = MAX_AMMO; s.reloadTicks = 0;
+    }
 
     @Override
     public StatePayload toPayload(HeroState hs) {

@@ -35,6 +35,7 @@ public class MineWatch implements ModInitializer {
     @Override
     public void onInitialize() {
         ModItems.init();
+        ModSounds.init();
         com.minewatch.server.ServerConfig.load();
         HeroRegistry.init();
         com.minewatch.entity.ModEntities.init();
@@ -77,6 +78,8 @@ public class MineWatch implements ModInitializer {
         PayloadTypeRegistry.playC2S().register(InputPayload.ID, InputPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SelectHeroPayload.ID, SelectHeroPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(PartyActionPayload.ID, PartyActionPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(com.minewatch.net.PerkChoosePayload.ID, com.minewatch.net.PerkChoosePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(com.minewatch.net.PerkStatePayload.ID, com.minewatch.net.PerkStatePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(StatePayload.ID, StatePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(MatchPayload.ID, MatchPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(KillFeedPayload.ID, KillFeedPayload.CODEC);
@@ -94,6 +97,8 @@ public class MineWatch implements ModInitializer {
             }
             HeroManager.select(ctx.player(), HeroRegistry.get(payload.heroId()));
         });
+        ServerPlayNetworking.registerGlobalReceiver(com.minewatch.net.PerkChoosePayload.ID,
+                (payload, ctx) -> com.minewatch.server.PerkManager.choose(ctx.player(), payload.perkId()));
         ServerPlayNetworking.registerGlobalReceiver(PartyActionPayload.ID,
                 (payload, ctx) -> PartyActions.handle(ctx.player(), payload));
     }
