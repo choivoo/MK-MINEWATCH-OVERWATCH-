@@ -132,12 +132,6 @@ public class GenArt {
     public static void main(String[] a) throws Exception {
         Path root = Path.of(a[0]);
         Path pick = root.resolve("pick");
-        bust(pick.resolve("roster_bust_soldier76.png"), SOLDIER, 0x2A3A5A, 0x141C2E, false);
-        bust(pick.resolve("roster_bust_widowmaker.png"), WIDOW, 0x4A2A6A, 0x1A1030, false);
-        bust(pick.resolve("roster_bust_reinhardt.png"), REIN, 0x4A4F5C, 0x1C1F26, false);
-        bust(pick.resolve("roster_bust_roadhog.png"), HOG, 0x4F5A2E, 0x1F2410, false);
-        bust(pick.resolve("roster_bust_ana.png"), ANA, 0x1E4A6A, 0x0E1E30, false);
-        bust(pick.resolve("roster_bust_mercy.png"), MERCY, 0x6A5A2A, 0x30280E, false);
 
         Path ab = root.resolve("ability");
         icon(ab.resolve("sprint.png"), g -> chevrons(g, 3));

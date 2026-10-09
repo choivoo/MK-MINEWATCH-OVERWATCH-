@@ -1,0 +1,16 @@
+{
+ "format_version": "1.8.0",
+ "animations": {
+  "animation.tracer.idle": {"animation_length": 2.0, "loop": true, "bones": {}},
+  "animation.tracer.fire_left": {"animation_length": 0.18, "bones": {}},
+  "animation.tracer.fire_right": {"animation_length": 0.18, "bones": {}},
+  "animation.tracer.fire": {"animation_length": 0.18, "bones": {}},
+  "animation.tracer.reload": {"animation_length": 1.0, "bones": {}},
+  "animation.tracer.blink": {"animation_length": 0.3, "bones": {}},
+  "animation.tracer.recall": {"animation_length": 1.0, "bones": {}},
+  "animation.tracer.melee": {"animation_length": 0.8, "bones": {}},
+  "animation.tracer.bomb": {"animation_length": 1.0, "bones": {}},
+  "animation.tracer.swing": {"animation_length": 0.5, "bones": {}},
+  "animation.tracer.run": {"animation_length": 1.0, "bones": {}}
+ }
+}

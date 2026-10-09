@@ -61,6 +61,7 @@ public final class HeroManager {
             ServerPlayNetworking.send(p, StatePayload.NONE);
             ServerPlayNetworking.send(p, PoolsPayload.NONE);
             ServerPlayNetworking.send(p, com.minewatch.net.PerkStatePayload.NONE);
+            broadcastHero(p, 0);
             return;
         }
         Entry e = new Entry();
@@ -70,8 +71,24 @@ public final class HeroManager {
         setMaxHealth(p, hero.maxHealthOw() / Hero.HP_SCALE);
         hero.onSelect(p, e.state);
         giveWeapon(p, hero);
+        broadcastHero(p, hero.numericId);
     }
 
+    /** 이 플레이어의 영웅 상태(0 = 없음)를 접속 중인 모두에게 알린다(스킨 동기화). */
+    private static void broadcastHero(ServerPlayerEntity p, int heroId) {
+        var pkt = new com.minewatch.net.HeroSyncPayload(p.getUuid(), heroId);
+        for (ServerPlayerEntity o : p.getServer().getPlayerManager().getPlayerList()) ServerPlayNetworking.send(o, pkt);
+    }
+
+    /** 새로 접속한 플레이어에게 이미 영웅을 고른 모든 플레이어를 알려 준다. */
+    public static void syncAllTo(ServerPlayerEntity joined) {
+        for (ServerPlayerEntity o : joined.getServer().getPlayerManager().getPlayerList()) {
+            Entry e = ENTRIES.get(o.getUuid());
+            if (e != null) ServerPlayNetworking.send(joined, new com.minewatch.net.HeroSyncPayload(o.getUuid(), e.hero.numericId));
+        }
+    }
+
+    /** 영웅 무기를 1번 슬롯에 지급한다.
     /** 영웅 무기를 1번 슬롯에 지급한다. 원래 있던 아이템은 인벤토리로 옮기거나 떨어뜨린다. */
     private static void giveWeapon(ServerPlayerEntity p, Hero hero) {
         if (hero.weapon() == null) return;
@@ -93,6 +110,7 @@ public final class HeroManager {
     public static Hero last(UUID id) { return LAST.get(id); }
 
     public static void remove(ServerPlayerEntity p) {
+        if (ENTRIES.containsKey(p.getUuid())) broadcastHero(p, 0);
         Entry e = ENTRIES.remove(p.getUuid());
         if (e != null) LAST.put(p.getUuid(), e.hero);
     }

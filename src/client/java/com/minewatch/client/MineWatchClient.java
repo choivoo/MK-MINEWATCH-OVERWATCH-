@@ -40,9 +40,10 @@ public class MineWatchClient implements ClientModInitializer {
         if (System.getProperty("minewatch.dev") != null) com.minewatch.client.dev.DevHarness.init();
         ClientPlayNetworking.registerGlobalReceiver(StatePayload.ID, (payload, ctx) -> state = payload);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.PoolsPayload.ID, (payload, ctx) -> pools = payload);
+        ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.HeroSyncPayload.ID, (payload, ctx) -> HeroSkins.set(payload.player(), payload.heroId()));
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.QueuePayload.ID, (payload, ctx) -> queue = payload);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.PerkStatePayload.ID, (payload, ctx) -> perk = payload);
-        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; pools = com.minewatch.net.PoolsPayload.NONE; queue = com.minewatch.net.QueuePayload.NONE; perk = com.minewatch.net.PerkStatePayload.NONE; MatchHud.reset(); HudEffects.reset(); });
+        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; HeroSkins.clear(); pools = com.minewatch.net.PoolsPayload.NONE; queue = com.minewatch.net.QueuePayload.NONE; perk = com.minewatch.net.PerkStatePayload.NONE; MatchHud.reset(); HudEffects.reset(); });
 
         // 영웅 활성 중에는 기본 조작(웅크리기/버리기)과 충돌하지 않도록 먼저 소비
         ClientTickEvents.START_CLIENT_TICK.register(mc -> {

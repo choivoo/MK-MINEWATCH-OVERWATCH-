@@ -52,7 +52,7 @@ public class MineWatch implements ModInitializer {
         });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> { MapData.load(server); MatchManager.loadOrigins(server); com.minewatch.server.QueueManager.init(); });
         ServerPlayConnectionEvents.DISCONNECT.register((h, s) -> { com.minewatch.server.QueueManager.onDisconnect(h.player); MatchManager.onLeave(h.player); HeroManager.remove(h.player); });
-        ServerPlayConnectionEvents.JOIN.register((h, sender, s) -> MatchManager.onJoin(h.player));
+        ServerPlayConnectionEvents.JOIN.register((h, sender, s) -> { HeroManager.syncAllTo(h.player); MatchManager.onJoin(h.player); });
         ServerPlayerEvents.AFTER_RESPAWN.register((oldP, newP, alive) -> {
             HeroManager.onRespawn(newP);
             MatchManager.onRespawn(newP);
@@ -81,6 +81,7 @@ public class MineWatch implements ModInitializer {
         PayloadTypeRegistry.playC2S().register(com.minewatch.net.PerkChoosePayload.ID, com.minewatch.net.PerkChoosePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(com.minewatch.net.PerkStatePayload.ID, com.minewatch.net.PerkStatePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(StatePayload.ID, StatePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(com.minewatch.net.HeroSyncPayload.ID, com.minewatch.net.HeroSyncPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(MatchPayload.ID, MatchPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(KillFeedPayload.ID, KillFeedPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(PoolsPayload.ID, PoolsPayload.CODEC);

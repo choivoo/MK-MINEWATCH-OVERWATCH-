@@ -51,6 +51,7 @@ public final class DevHarness {
     private static void add(int waitAfter, Consumer<MinecraftClient> a) { STEPS.add(new Step(waitAfter, a)); }
 
     private static void shot(MinecraftClient mc, String name) {
+        mc.getToastManager().clear();
         ScreenshotRecorder.saveScreenshot(mc.runDirectory, "dev_" + name + ".png", mc.getFramebuffer(), t -> {});
         System.out.println("[MineWatch] 스크린샷 " + name);
     }
@@ -72,9 +73,12 @@ public final class DevHarness {
             add(40, mc -> shot(mc, "01_lobby_auto"));
             add(10, mc -> mc.setScreen(new com.minewatch.client.screen.HomeScreen(null)));
             add(20, mc -> shot(mc, "02_lobby"));
-            for (Role r : new Role[]{Role.DAMAGE, Role.TANK, Role.SUPPORT}) {
-                add(10, mc -> { var s = new HeroSelectScreen(null); mc.setScreen(s); s.devSetTab(r); });
-                add(20, mc -> shot(mc, "03_hero_select_" + r.key));
+            // 영웅 선택: 영웅마다 3D 미리보기(스킨) 장면. 처음 한 장은 등장 섬광 직후에 찍는다.
+            add(10, mc -> { var s = new HeroSelectScreen(null); mc.setScreen(s); s.devPreview("tracer"); });
+            add(18, mc -> shot(mc, "03_pick_flash"));
+            for (Hero h : HeroRegistry.all()) {
+                add(10, mc -> { if (mc.currentScreen instanceof HeroSelectScreen s) s.devPreview(h.id); });
+                add(30, mc -> shot(mc, "03_pick_" + h.id));
             }
             add(10, mc -> mc.setScreen(new PartyScreen(null)));
             add(20, mc -> shot(mc, "04_settings"));

@@ -197,6 +197,10 @@ public class GenGeo {
     static void write(Path root, String id, List<Bone> bones, boolean hasMag, boolean hammer) throws Exception {
         Files.writeString(root.resolve("geo/item/" + id + ".geo.json"), geo(id, bones));
         Files.writeString(root.resolve("animations/item/" + id + ".animation.json"), animations(id, hasMag, hammer));
+        // 3인칭/인벤토리용: 팔 없는 무기만
+        List<Bone> weaponOnly = new ArrayList<>();
+        for (Bone b : bones) if (!b.name.startsWith("arm_")) weaponOnly.add(b);
+        Files.writeString(root.resolve("geo/item/" + id + "_tp.geo.json"), geo(id + "_tp", weaponOnly));
     }
 
     public static void main(String[] a) throws Exception {
