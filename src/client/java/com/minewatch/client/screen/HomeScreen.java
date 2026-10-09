@@ -30,13 +30,14 @@ public class HomeScreen extends Screen {
                 b -> client.setScreen(new HeroSelectScreen(this))).dimensions(x, y + 36, w, 22).build());
         addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.settings"),
                 b -> client.setScreen(new PartyScreen(this))).dimensions(x, y + 62, w, 22).build());
-        for (int i = 0; i < 2; i++) {
-            String key = i == 0 ? "ai" : "online";
-            var btn = addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.mode." + key), b -> {})
-                    .dimensions(x, y + 88 + 26 * i, w, 22)
-                    .tooltip(Tooltip.of(Text.translatable("screen.minewatch.coming_soon"))).build());
-            btn.active = false;
-        }
+        addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.mode.ai"), b -> {
+            PartyScreen.send("play_ai");
+            client.setScreen(null);
+        }).dimensions(x, y + 88, w, 22).tooltip(Tooltip.of(Text.translatable("screen.minewatch.mode.ai.tooltip"))).build());
+        var online = addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.mode.online"), b -> {})
+                .dimensions(x, y + 114, w, 22)
+                .tooltip(Tooltip.of(Text.translatable("screen.minewatch.coming_soon"))).build());
+        online.active = false;
         addDrawableChild(ButtonWidget.builder(Text.translatable("screen.minewatch.close"), b -> close())
                 .dimensions(x, y + 148, w, 20).build());
     }

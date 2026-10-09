@@ -24,6 +24,8 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "software.bernie.geckolib:geckolib-fabric-1.21.1:4.8.2"
+    include "software.bernie.geckolib:geckolib-fabric-1.21.1:4.8.2"
 }
 
 processResources {
@@ -38,7 +40,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+    maven { url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/" }
+}
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'

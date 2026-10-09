@@ -1,4 +1,10 @@
 {
+  "entity.minewatch.bot": "봇",
+  "screen.minewatch.mode.ai.tooltip": "봇과 대전합니다 (난이도는 게임 설정에서)",
+  "screen.minewatch.party.difficulty": "봇 난이도: %s",
+  "screen.minewatch.party.difficulty.0": "쉬움",
+  "screen.minewatch.party.difficulty.1": "보통",
+  "screen.minewatch.party.difficulty.2": "어려움",
   "screen.minewatch.play": "게임 시작",
   "screen.minewatch.play.tooltip": "랜덤 맵에서 매치를 시작합니다",
   "screen.minewatch.settings": "게임 설정",

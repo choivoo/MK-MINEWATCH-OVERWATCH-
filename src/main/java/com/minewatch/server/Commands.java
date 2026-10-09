@@ -17,6 +17,24 @@ public final class Commands {
     public static void register(CommandDispatcher<ServerCommandSource> d) {
         d.register(literal("minewatch")
                 .then(heroCommand())
+                .then(literal("bot").requires(s -> s.hasPermissionLevel(2))
+                        .then(literal("clear").executes(c -> { BotManager.clearAll(); return 1; }))
+                        .then(literal("spawn")
+                                .then(argument("type", StringArgumentType.word()).suggests((c, b) -> {
+                                    for (BotStats.Type t : BotStats.Type.values()) b.suggest(t.key);
+                                    return b.buildFuture();
+                                }).then(argument("team", IntegerArgumentType.integer(0, 1)).executes(c -> {
+                                    BotStats.Type type = null;
+                                    String key = StringArgumentType.getString(c, "type");
+                                    for (BotStats.Type t : BotStats.Type.values()) if (t.key.equals(key)) type = t;
+                                    if (type == null) { c.getSource().sendError(Text.literal("알 수 없는 봇 종류입니다.")); return 0; }
+                                    if (BotManager.spawn(c.getSource().getServer(), IntegerArgumentType.getInteger(c, "team"), type,
+                                            BotStats.Difficulty.NORMAL) == null) {
+                                        c.getSource().sendError(Text.literal("봇을 만들 수 없습니다. 먼저 /minewatch map build 로 맵을 지으세요."));
+                                        return 0;
+                                    }
+                                    return 1;
+                                })))))
                 .then(literal("team")
                         .then(literal("auto").executes(c -> team(c.getSource(), -1)))
                         .then(literal("a").executes(c -> team(c.getSource(), 0)))

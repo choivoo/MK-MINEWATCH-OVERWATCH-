@@ -75,6 +75,7 @@ public class MineWatchClient implements ClientModInitializer {
         AttackEntityCallback.EVENT.register((p, w, h, e, hit) ->
                 state.heroId() != 0 && p.getMainHandStack().isOf(ModItems.PULSE_PISTOLS) ? ActionResult.FAIL : ActionResult.PASS);
 
+        net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(com.minewatch.entity.ModEntities.BOT, com.minewatch.client.render.BotRenderer::new);
         HudRenderCallback.EVENT.register(OverwatchHud::render);
         HudRenderCallback.EVENT.register(MatchHud::render);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.MatchPayload.ID, (p, ctx) -> MatchHud.match = p);

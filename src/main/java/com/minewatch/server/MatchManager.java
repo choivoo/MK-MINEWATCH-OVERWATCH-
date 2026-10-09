@@ -24,6 +24,7 @@ public final class MatchManager {
     public static final int COUNTDOWN_TICKS = 200, ENDED_TICKS = 200, CAPTURE_TICKS = 100;
 
     private static int state = NONE, mode = MODE_TDM;
+    private static boolean aiMatch = false;
     private static int ticksLeft, target, timeLimit;
     private static final int[] score = new int[2];
     private static final Map<UUID, Integer> teams = new HashMap<>();
@@ -62,9 +63,16 @@ public final class MatchManager {
         return (state == COUNTDOWN || state == ENDED) && teamOf(p) >= 0;
     }
     public static int teamOf(ServerPlayerEntity p) { return teams.getOrDefault(p.getUuid(), -1); }
-    public static boolean sameTeam(ServerPlayerEntity a, ServerPlayerEntity b) {
-        int ta = teamOf(a);
-        return ta >= 0 && ta == teamOf(b);
+    public static int mode() { return mode; }
+    /** 플레이어 또는 봇의 팀. 매치 참가자가 아니면 -1. */
+    public static int teamOfEntity(net.minecraft.entity.Entity e) {
+        if (e instanceof ServerPlayerEntity p) return teamOf(p);
+        if (e instanceof com.minewatch.entity.BotEntity b) return b.botTeam();
+        return -1;
+    }
+    public static boolean sameTeam(net.minecraft.entity.Entity a, net.minecraft.entity.Entity b) {
+        int ta = teamOfEntity(a);
+        return ta >= 0 && ta == teamOfEntity(b);
     }
 
     public static void setPreference(ServerPlayerEntity p, int team) {
@@ -74,6 +82,13 @@ public final class MatchManager {
 
     /** 매치를 시작한다. 실패하면 사유를 반환, 성공하면 null. */
     public static String start(MinecraftServer server, int newMode, int targetValue, int seconds) {
+        return start(server, newMode, targetValue, seconds, false, 1);
+    }
+
+    /** ai=true 면 모든 플레이어를 A팀에 두고 B팀(및 부족한 A팀)을 봇으로 채운다. */
+    public static String start(MinecraftServer server, int newMode, int targetValue, int seconds, boolean ai, int difficulty) {
+        BotManager.clearAll();
+        aiMatch = ai;
         MapData map = MapData.get();
         if (newMode == MODE_CONTROL && !map.hasPoint()) return "점령지가 없습니다. 아레나를 먼저 만드세요.";
         mode = newMode == MODE_CONTROL ? MODE_CONTROL : MODE_TDM;
@@ -87,7 +102,8 @@ public final class MatchManager {
         if (mw != null) mw.setTimeOfDay(6000);   // 항상 낮에 시작
         state = COUNTDOWN; ticksLeft = COUNTDOWN_TICKS;
         for (ServerPlayerEntity p : list) { p.setHealth(p.getMaxHealth()); teleportToSpawn(p); }
-        String what = mode == MODE_CONTROL ? "점령전 (목표 " + target + "점)" : "팀 데스매치 (목표 " + target + "킬)";
+        if (ai) BotManager.spawnMatchBots(server, BotStats.Difficulty.of(difficulty), list.size());
+        String what = (ai ? "AI 대전 · " : "") + (mode == MODE_CONTROL ? "점령전 (목표 " + target + "점)" : "팀 데스매치 (목표 " + target + "킬)");
         broadcast(server, Text.literal("매치가 곧 시작됩니다: " + what + ". 영웅을 고르세요!"));
         sync(server);
         return null;
@@ -95,6 +111,8 @@ public final class MatchManager {
 
     public static void stop(MinecraftServer server) {
         state = NONE; teams.clear();
+        BotManager.clearAll();
+        aiMatch = false;
         returnToOrigins(server);
         sync(server);
     }
@@ -104,7 +122,7 @@ public final class MatchManager {
         int a = 0, b = 0;
         for (int t : teams.values()) { if (t == 0) a++; else b++; }
         Integer pref = prefs.get(p.getUuid());
-        int t = pref != null ? pref : (a <= b ? 0 : 1);
+        int t = aiMatch ? 0 : pref != null ? pref : (a <= b ? 0 : 1);
         teams.put(p.getUuid(), t);
         p.sendMessage(Text.literal("당신은 " + (t == 0 ? "A" : "B") + "팀입니다."), false);
     }
@@ -129,12 +147,13 @@ public final class MatchManager {
         p.teleport(w, s[0], s[1], s[2], (float) s[3], 0f);
     }
 
-    public static void onDeath(ServerPlayerEntity victim, DamageSource src) {
+    /** 플레이어 또는 봇이 죽었을 때. 킬피드와 데스매치 점수를 처리한다. */
+    public static void onDeath(net.minecraft.entity.LivingEntity victim, DamageSource src) {
         if (state != LIVE) return;
-        int vt = teamOf(victim);
+        int vt = teamOfEntity(victim);
         if (vt < 0) return;
-        ServerPlayerEntity killer = src.getAttacker() instanceof ServerPlayerEntity k ? k : null;
-        int kt = killer == null ? -1 : teamOf(killer);
+        net.minecraft.entity.LivingEntity killer = src.getAttacker() instanceof net.minecraft.entity.LivingEntity k ? k : null;
+        int kt = killer == null ? -1 : teamOfEntity(killer);
         MinecraftServer server = victim.getServer();
         KillFeedPayload kf = new KillFeedPayload(killer == null ? "" : killer.getName().getString(), kt,
                 victim.getName().getString(), vt);

@@ -1,4 +1,10 @@
 {
+  "entity.minewatch.bot": "Bot",
+  "screen.minewatch.mode.ai.tooltip": "Fight bots (set difficulty in Game Settings)",
+  "screen.minewatch.party.difficulty": "Bot difficulty: %s",
+  "screen.minewatch.party.difficulty.0": "Easy",
+  "screen.minewatch.party.difficulty.1": "Normal",
+  "screen.minewatch.party.difficulty.2": "Hard",
   "screen.minewatch.play": "Play",
   "screen.minewatch.play.tooltip": "Start a match on a random map",
   "screen.minewatch.settings": "Game Settings",

@@ -36,6 +36,7 @@ public class MineWatch implements ModInitializer {
     public void onInitialize() {
         ModItems.init();
         HeroRegistry.init();
+        com.minewatch.entity.ModEntities.init();
         registerNetworking();
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -43,6 +44,7 @@ public class MineWatch implements ModInitializer {
             PulseBombs.tick();
             MatchManager.tick(server);
             HealthPacks.tick(server);
+            com.minewatch.server.BotManager.tick(server);
         });
         ServerLifecycleEvents.SERVER_STARTED.register(MapData::load);
         ServerPlayConnectionEvents.DISCONNECT.register((h, s) -> { HeroManager.remove(h.player); MatchManager.onLeave(h.player); });
@@ -51,16 +53,18 @@ public class MineWatch implements ModInitializer {
             HeroManager.onRespawn(newP);
             MatchManager.onRespawn(newP);
         });
-        ServerLivingEntityEvents.AFTER_DEATH.register((e, src) -> { if (e instanceof ServerPlayerEntity p) MatchManager.onDeath(p, src); });
+        ServerLivingEntityEvents.AFTER_DEATH.register((e, src) -> { if (e instanceof ServerPlayerEntity || e instanceof com.minewatch.entity.BotEntity) MatchManager.onDeath(e, src); });
         ServerLifecycleCleanup.register();
 
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) -> {
-            if (!(e instanceof ServerPlayerEntity v)) return true;
-            // 같은 팀 아군 피해 차단
-            if (src.getAttacker() instanceof ServerPlayerEntity a && a != v && MatchManager.sameTeam(a, v)) return false;
+            // 같은 팀(플레이어/봇) 아군 피해 차단
+            if (src.getAttacker() != null && src.getAttacker() != e && MatchManager.sameTeam(src.getAttacker(), e)) return false;
             // 리콜 등 무적 상태
-            var hs = HeroManager.stateOf(v);
-            return hs == null || !hs.invulnerable();
+            if (e instanceof ServerPlayerEntity v) {
+                var hs = HeroManager.stateOf(v);
+                return hs == null || !hs.invulnerable();
+            }
+            return true;
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, access, env) -> Commands.register(dispatcher));
