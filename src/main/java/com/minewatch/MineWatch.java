@@ -10,6 +10,7 @@ import com.minewatch.hero.TracerState;
 import com.minewatch.net.InputPayload;
 import com.minewatch.net.StatePayload;
 import com.minewatch.server.HeroManager;
+import com.minewatch.server.MatchManager;
 import com.minewatch.server.PulseBombs;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
@@ -35,15 +36,26 @@ public class MineWatch implements ModInitializer {
         PayloadTypeRegistry.playC2S().register(com.minewatch.net.SelectHeroPayload.ID, com.minewatch.net.SelectHeroPayload.CODEC);
         // TODO(M2): 매치 상태가 '대기/스폰 중'일 때만 변경 허용
         ServerPlayNetworking.registerGlobalReceiver(com.minewatch.net.SelectHeroPayload.ID,
-                (payload, ctx) -> HeroManager.select(ctx.player(), HeroRegistry.get(payload.heroId())));
+                (payload, ctx) -> {
+                    if (!MatchManager.canChangeHero()) { ctx.player().sendMessage(Text.literal("매치 진행 중에는 영웅을 바꿀 수 없습니다."), true); return; }
+                    HeroManager.select(ctx.player(), HeroRegistry.get(payload.heroId()));
+                });
+        PayloadTypeRegistry.playS2C().register(com.minewatch.net.MatchPayload.ID, com.minewatch.net.MatchPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(com.minewatch.net.KillFeedPayload.ID, com.minewatch.net.KillFeedPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(InputPayload.ID,
                 (payload, ctx) -> HeroManager.setInput(ctx.player(), payload));
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             HeroManager.tickAll(server.getPlayerManager().getPlayerList());
             PulseBombs.tick();
+            MatchManager.tick(server);
         });
-        ServerPlayConnectionEvents.DISCONNECT.register((h, s) -> HeroManager.remove(h.player));
+        ServerPlayConnectionEvents.DISCONNECT.register((h, s) -> { HeroManager.remove(h.player); MatchManager.onLeave(h.player); });
+        ServerPlayConnectionEvents.JOIN.register((h, sender, s) -> MatchManager.onJoin(h.player));
+        ServerLivingEntityEvents.AFTER_DEATH.register((e, src) -> { if (e instanceof ServerPlayerEntity p) MatchManager.onDeath(p, src); });
+        // 같은 팀 아군 피해 차단
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((e, src, amt) ->
+                !(e instanceof ServerPlayerEntity v && src.getAttacker() instanceof ServerPlayerEntity a && a != v && MatchManager.sameTeam(a, v)));
         ServerLifecycleCleanup.register();
 
         // 리콜 중에는 모든 피해에 무적
@@ -53,6 +65,12 @@ public class MineWatch implements ModInitializer {
             return true;
         });
 
+        CommandRegistrationCallback.EVENT.register((dispatcher, access, env) -> dispatcher.register(
+                literal("minewatch").then(literal("match").requires(s -> s.hasPermissionLevel(2))
+                        .then(literal("stop").executes(c -> { MatchManager.stop(c.getSource().getServer()); return 1; }))
+                        .then(literal("start").executes(c -> { MatchManager.start(c.getSource().getServer(), 20, 300); return 1; })
+                                .then(argument("kills", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 200)).executes(c -> {
+                                    MatchManager.start(c.getSource().getServer(), com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(c, "kills"), 300); return 1; }))))));
         CommandRegistrationCallback.EVENT.register((dispatcher, access, env) -> dispatcher.register(
                 literal("minewatch").then(literal("hero")
                         .then(literal("none").executes(c -> {
