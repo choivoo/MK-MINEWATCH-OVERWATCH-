@@ -51,7 +51,7 @@ public final class MatchManager {
     }
 
     // 점령지 상태
-    private static int pointOwner = -1, pointCap = -1, pointProgress = 0;
+    private static final ControlPoint POINT = new ControlPoint();
 
     public static int state() { return state; }
     public static boolean active() { return state != NONE; }
@@ -78,7 +78,7 @@ public final class MatchManager {
         if (newMode == MODE_CONTROL && !map.hasPoint()) return "점령지가 없습니다. 아레나를 먼저 만드세요.";
         mode = newMode == MODE_CONTROL ? MODE_CONTROL : MODE_TDM;
         score[0] = score[1] = 0;
-        pointOwner = -1; pointCap = -1; pointProgress = 0;
+        POINT.reset();
         target = targetValue; timeLimit = seconds * 20;
         teams.clear();
         List<ServerPlayerEntity> list = server.getPlayerManager().getPlayerList();
@@ -175,25 +175,11 @@ public final class MatchManager {
             double dx = p.getX() - map.point[0], dz = p.getZ() - map.point[2];
             if (dx * dx + dz * dz <= map.radius * map.radius && Math.abs(p.getY() - map.point[1]) <= 4) present[t]++;
         }
-        boolean contested = present[0] > 0 && present[1] > 0;
-        int only = contested ? -1 : present[0] > 0 ? 0 : present[1] > 0 ? 1 : -1;
-        if (!contested) {
-            if (only >= 0 && only != pointOwner) {
-                if (pointCap != only) {
-                    pointProgress -= 2;
-                    if (pointProgress <= 0) { pointCap = only; pointProgress = 0; }
-                } else if (++pointProgress >= 100) {
-                    pointOwner = only; pointCap = -1; pointProgress = 0;
-                    broadcast(server, Text.literal((only == 0 ? "A" : "B") + "팀이 점령지를 차지했습니다!"));
-                }
-            } else if (pointProgress > 0) {
-                pointProgress = Math.max(0, pointProgress - (only >= 0 ? 2 : 1));
-                if (pointProgress == 0) pointCap = -1;
-            }
-        }
-        if (pointOwner >= 0 && server.getTicks() % 20 == 0) score[pointOwner]++;
+        int captured = POINT.tick(present[0], present[1]);
+        if (captured >= 0) broadcast(server, Text.literal((captured == 0 ? "A" : "B") + "팀이 점령지를 차지했습니다!"));
+        if (POINT.owner >= 0 && server.getTicks() % 20 == 0) score[POINT.owner]++;
         if (server.getTicks() % 10 == 0) {
-            Vector3f col = pointOwner == 0 ? new Vector3f(0.25f, 0.65f, 1f) : pointOwner == 1 ? new Vector3f(1f, 0.3f, 0.3f)
+            Vector3f col = POINT.owner == 0 ? new Vector3f(0.25f, 0.65f, 1f) : POINT.owner == 1 ? new Vector3f(1f, 0.3f, 0.3f)
                     : new Vector3f(0.85f, 0.85f, 0.85f);
             DustParticleEffect fx = new DustParticleEffect(col, 1.4f);
             for (int i = 0; i < 28; i++) {
@@ -218,7 +204,7 @@ public final class MatchManager {
         for (ServerPlayerEntity p : list) {
             ServerPlayNetworking.send(p, state == NONE ? MatchPayload.NONE
                     : new MatchPayload(state, teamOf(p), score[0], score[1], target, ticksLeft,
-                            mode, pointOwner, pointProgress, pointCap));
+                            mode, POINT.owner, POINT.progress, POINT.capTeam));
         }
     }
 
