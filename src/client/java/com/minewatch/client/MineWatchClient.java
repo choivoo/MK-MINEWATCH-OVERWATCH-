@@ -26,6 +26,7 @@ public class MineWatchClient implements ClientModInitializer {
     static final KeyBinding ULT = key("key.minewatch.ult", GLFW.GLFW_KEY_Q);
     static final KeyBinding RELOAD = key("key.minewatch.reload", GLFW.GLFW_KEY_R);
     static final KeyBinding MELEE = key("key.minewatch.melee", GLFW.GLFW_KEY_V);
+    static final KeyBinding MENU = key("key.minewatch.menu", GLFW.GLFW_KEY_H);
 
     private static KeyBinding key(String name, int code) {
         return KeyBindingHelper.registerKeyBinding(new KeyBinding(name, InputUtil.Type.KEYSYM, code, CAT));
@@ -73,5 +74,16 @@ public class MineWatchClient implements ClientModInitializer {
                 state.heroId() != 0 && p.getMainHandStack().isOf(ModItems.PULSE_PISTOLS) ? ActionResult.FAIL : ActionResult.PASS);
 
         HudRenderCallback.EVENT.register(OverwatchHud::render);
+
+        ClientTickEvents.END_CLIENT_TICK.register(mc -> {
+            while (MENU.wasPressed()) if (mc.currentScreen == null) mc.setScreen(new com.minewatch.client.screen.HomeScreen(null));
+        });
+        net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
+            if (screen instanceof net.minecraft.client.gui.screen.TitleScreen) {
+                net.fabricmc.fabric.api.client.screen.v1.Screens.getButtons(screen).add(
+                        net.minecraft.client.gui.widget.ButtonWidget.builder(net.minecraft.text.Text.translatable("screen.minewatch.home"),
+                                b -> mc.setScreen(new com.minewatch.client.screen.HomeScreen(screen))).dimensions(w / 2 + 104, h / 4 + 48, 60, 20).build());
+            }
+        });
     }
 }

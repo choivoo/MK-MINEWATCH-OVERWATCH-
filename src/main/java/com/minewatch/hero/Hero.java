@@ -15,6 +15,7 @@ public abstract class Hero {
 
     protected Hero(int numericId, String id) { this.numericId = numericId; this.id = id; }
 
+    public Role role() { return Role.DAMAGE; }
     public abstract double ultCost();
     /** 초당 자연 궁극기 충전량. */
     public double passiveUltPerSecond() { return 5.0; }

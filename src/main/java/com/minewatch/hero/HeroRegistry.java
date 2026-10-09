@@ -17,6 +17,7 @@ public final class HeroRegistry {
     public static Hero get(String id) { return BY_ID.get(id); }
     public static Hero get(int numericId) { return BY_NUM.get(numericId); }
     public static Iterable<String> ids() { return BY_ID.keySet(); }
+    public static java.util.Collection<Hero> all() { return BY_ID.values(); }
     public static void init() {}
     private HeroRegistry() {}
 }

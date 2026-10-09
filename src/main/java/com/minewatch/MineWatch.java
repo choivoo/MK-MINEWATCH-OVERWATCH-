@@ -32,6 +32,10 @@ public class MineWatch implements ModInitializer {
 
         PayloadTypeRegistry.playC2S().register(InputPayload.ID, InputPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(StatePayload.ID, StatePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(com.minewatch.net.SelectHeroPayload.ID, com.minewatch.net.SelectHeroPayload.CODEC);
+        // TODO(M2): 매치 상태가 '대기/스폰 중'일 때만 변경 허용
+        ServerPlayNetworking.registerGlobalReceiver(com.minewatch.net.SelectHeroPayload.ID,
+                (payload, ctx) -> HeroManager.select(ctx.player(), HeroRegistry.get(payload.heroId())));
         ServerPlayNetworking.registerGlobalReceiver(InputPayload.ID,
                 (payload, ctx) -> HeroManager.setInput(ctx.player(), payload));
 
