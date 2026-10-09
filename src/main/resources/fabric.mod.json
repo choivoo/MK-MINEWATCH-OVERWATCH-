@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "minewatch",
+  "version": "${version}",
+  "name": "MineWatch",
+  "description": "Overwatch in Minecraft. Install this one mod and play Overwatch heroes in blocky Minecraft style.",
+  "authors": ["choivoo"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.minewatch.MineWatch"],
+    "client": ["com.minewatch.client.MineWatchClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
