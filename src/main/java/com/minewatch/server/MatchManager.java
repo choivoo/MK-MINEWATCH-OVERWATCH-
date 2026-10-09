@@ -36,7 +36,34 @@ public final class MatchManager {
     private static final Map<UUID, Origin> origins = new HashMap<>();
 
     private static void recordOrigin(ServerPlayerEntity p) {
-        origins.putIfAbsent(p.getUuid(), new Origin(p.getServerWorld().getRegistryKey(), p.getX(), p.getY(), p.getZ(), p.getYaw(), p.getPitch()));
+        if (origins.putIfAbsent(p.getUuid(), new Origin(p.getServerWorld().getRegistryKey(), p.getX(), p.getY(), p.getZ(), p.getYaw(), p.getPitch())) == null)
+            persistOrigins(p.getServer());
+    }
+
+    private static java.nio.file.Path originsFile(MinecraftServer server) {
+        return server.getSavePath(net.minecraft.util.WorldSavePath.ROOT).resolve("minewatch_origins.json");
+    }
+
+    /** 매치 전 위치를 월드 폴더에 저장한다(서버가 매치 도중 꺼져도 복구할 수 있게). */
+    static void persistOrigins(MinecraftServer server) {
+        java.util.Map<String, OriginStore.Entry> m = new java.util.LinkedHashMap<>();
+        for (var e : origins.entrySet()) {
+            Origin o = e.getValue();
+            m.put(e.getKey().toString(), new OriginStore.Entry(o.world().getValue().toString(), o.x(), o.y(), o.z(), o.yaw(), o.pitch()));
+        }
+        OriginStore.save(originsFile(server), m);
+    }
+
+    /** 서버 시작 시 저장된 위치 기록을 읽어 온다. */
+    public static void loadOrigins(MinecraftServer server) {
+        origins.clear();
+        for (var e : OriginStore.load(originsFile(server)).entrySet()) {
+            try {
+                var o = e.getValue();
+                origins.put(UUID.fromString(e.getKey()), new Origin(net.minecraft.registry.RegistryKey.of(net.minecraft.registry.RegistryKeys.WORLD,
+                        net.minecraft.util.Identifier.of(o.world())), o.x(), o.y(), o.z(), o.yaw(), o.pitch()));
+            } catch (RuntimeException ex) { /* 손상된 항목은 무시 */ }
+        }
     }
 
     private static void returnToOrigins(MinecraftServer server) {
@@ -50,6 +77,7 @@ public final class MatchManager {
             p.setHealth(p.getMaxHealth());
         }
         // 오프라인인 참가자의 위치 기록은 남겨 두었다가 재접속 때 로비로 돌려보낸다.
+        persistOrigins(server);
     }
 
     // 점령지 상태
@@ -151,6 +179,7 @@ public final class MatchManager {
     public static void onJoin(ServerPlayerEntity p) {
         if (!active()) {
             Origin o = origins.remove(p.getUuid());
+            if (o != null) persistOrigins(p.getServer());
             if (o != null) {
                 ServerWorld w = p.getServer().getWorld(o.world());
                 if (w != null) p.teleport(w, o.x(), o.y(), o.z(), o.yaw(), o.pitch());

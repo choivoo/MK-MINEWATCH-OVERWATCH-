@@ -49,7 +49,7 @@ public class MineWatch implements ModInitializer {
             com.minewatch.server.QueueManager.tick(server);
             com.minewatch.server.VenomMines.tick(server);
         });
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> { MapData.load(server); com.minewatch.server.QueueManager.init(); });
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> { MapData.load(server); MatchManager.loadOrigins(server); com.minewatch.server.QueueManager.init(); });
         ServerPlayConnectionEvents.DISCONNECT.register((h, s) -> { com.minewatch.server.QueueManager.onDisconnect(h.player); MatchManager.onLeave(h.player); HeroManager.remove(h.player); });
         ServerPlayConnectionEvents.JOIN.register((h, sender, s) -> MatchManager.onJoin(h.player));
         ServerPlayerEvents.AFTER_RESPAWN.register((oldP, newP, alive) -> {
