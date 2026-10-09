@@ -43,7 +43,7 @@ public class HeroSelectScreen extends Screen {
     private void pick(Hero h) {
         if (client != null && client.world != null) {
             ClientPlayNetworking.send(new SelectHeroPayload(h.id));
-            client.setScreen(null);
+            client.setScreen(parent);
         }
     }
 

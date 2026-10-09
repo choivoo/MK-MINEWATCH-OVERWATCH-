@@ -30,6 +30,26 @@ public final class MatchManager {
     /** 플레이어가 고른 팀 선호(0 A, 1 B). 없으면 자동 배정. */
     private static final Map<UUID, Integer> prefs = new HashMap<>();
 
+    /** 매치 시작 전 위치(로비). 매치가 끝나면 여기로 돌려보낸다. */
+    private record Origin(net.minecraft.registry.RegistryKey<net.minecraft.world.World> world, double x, double y, double z, float yaw, float pitch) {}
+    private static final Map<UUID, Origin> origins = new HashMap<>();
+
+    private static void recordOrigin(ServerPlayerEntity p) {
+        origins.putIfAbsent(p.getUuid(), new Origin(p.getServerWorld().getRegistryKey(), p.getX(), p.getY(), p.getZ(), p.getYaw(), p.getPitch()));
+    }
+
+    private static void returnToOrigins(MinecraftServer server) {
+        for (ServerPlayerEntity p : server.getPlayerManager().getPlayerList()) {
+            Origin o = origins.get(p.getUuid());
+            if (o == null) continue;
+            ServerWorld w = server.getWorld(o.world());
+            if (w != null) p.teleport(w, o.x(), o.y(), o.z(), o.yaw(), o.pitch());
+            if (!p.isAlive()) continue;
+            p.setHealth(p.getMaxHealth());
+        }
+        origins.clear();
+    }
+
     // 점령지 상태
     private static int pointOwner = -1, pointCap = -1, pointProgress = 0;
 
@@ -62,7 +82,9 @@ public final class MatchManager {
         target = targetValue; timeLimit = seconds * 20;
         teams.clear();
         List<ServerPlayerEntity> list = server.getPlayerManager().getPlayerList();
-        for (ServerPlayerEntity p : list) assign(p);
+        for (ServerPlayerEntity p : list) { recordOrigin(p); assign(p); }
+        ServerWorld mw = map.world(server);
+        if (mw != null) mw.setTimeOfDay(6000);   // 항상 낮에 시작
         state = COUNTDOWN; ticksLeft = COUNTDOWN_TICKS;
         for (ServerPlayerEntity p : list) { p.setHealth(p.getMaxHealth()); teleportToSpawn(p); }
         String what = mode == MODE_CONTROL ? "점령전 (목표 " + target + "점)" : "팀 데스매치 (목표 " + target + "킬)";
@@ -73,6 +95,7 @@ public final class MatchManager {
 
     public static void stop(MinecraftServer server) {
         state = NONE; teams.clear();
+        returnToOrigins(server);
         sync(server);
     }
 
@@ -87,6 +110,7 @@ public final class MatchManager {
     }
     public static void onJoin(ServerPlayerEntity p) {
         if (!active()) return;
+        recordOrigin(p);
         assign(p);
         teleportToSpawn(p);
     }
@@ -198,6 +222,6 @@ public final class MatchManager {
         }
     }
 
-    public static void clear() { state = NONE; teams.clear(); prefs.clear(); }
+    public static void clear() { state = NONE; teams.clear(); prefs.clear(); origins.clear(); }
     private MatchManager() {}
 }

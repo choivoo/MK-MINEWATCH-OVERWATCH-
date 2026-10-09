@@ -82,15 +82,21 @@ public class MineWatchClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.HitPayload.ID, (p, ctx) -> HudEffects.onHit(p.kind()));
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.DamageDirPayload.ID, (p, ctx) -> HudEffects.onDamage(p.x(), p.z()));
 
+        // 월드에 들어오면(그리고 매치가 끝나면) 로비 화면을 자동으로 연다. H 키로도 열 수 있다.
+        ClientPlayConnectionEvents.JOIN.register((h, s, c) -> openLobby = true);
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
+            int ms = MatchHud.match.state();
+            if (lastMatchState != 0 && ms == 0) openLobby = true;
+            lastMatchState = ms;
+            if (mc.player == null || mc.world == null) return;
             while (MENU.wasPressed()) if (mc.currentScreen == null) mc.setScreen(new com.minewatch.client.screen.HomeScreen(null));
-        });
-        net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((mc, screen, w, h) -> {
-            if (screen instanceof net.minecraft.client.gui.screen.TitleScreen) {
-                net.fabricmc.fabric.api.client.screen.v1.Screens.getButtons(screen).add(
-                        net.minecraft.client.gui.widget.ButtonWidget.builder(net.minecraft.text.Text.translatable("screen.minewatch.home"),
-                                b -> mc.setScreen(new com.minewatch.client.screen.HomeScreen(screen))).dimensions(w / 2 + 104, h / 4 + 48, 60, 20).build());
+            if (openLobby && mc.currentScreen == null && ms == 0) {
+                openLobby = false;
+                mc.setScreen(new com.minewatch.client.screen.HomeScreen(null));
             }
         });
     }
+
+    private static boolean openLobby = false;
+    private static int lastMatchState = 0;
 }

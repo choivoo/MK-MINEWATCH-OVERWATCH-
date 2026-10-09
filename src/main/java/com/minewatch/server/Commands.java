@@ -35,12 +35,16 @@ public final class Commands {
                                         .then(argument("points", IntegerArgumentType.integer(1, 1000)).executes(c ->
                                                 startMatch(c.getSource(), MatchManager.MODE_CONTROL, IntegerArgumentType.getInteger(c, "points"), 600))))))
                 .then(literal("map").requires(s -> s.hasPermissionLevel(2))
-                        .then(literal("arena").executes(c -> {
-                            ServerPlayerEntity p = c.getSource().getPlayerOrThrow();
-                            MapData.buildArena(p.getServerWorld(), p.getBlockPos());
-                            c.getSource().sendFeedback(() -> Text.literal("아레나를 만들었습니다."), false);
+                        .then(literal("build").then(argument("map", StringArgumentType.word()).suggests((c, b) -> {
+                            GameMaps.ALL.forEach(m -> b.suggest(m.id()));
+                            return b.buildFuture();
+                        }).executes(c -> {
+                            GameMaps.Def def = GameMaps.byId(StringArgumentType.getString(c, "map"));
+                            if (def == null) { c.getSource().sendError(Text.literal("알 수 없는 맵입니다.")); return 0; }
+                            GameMaps.buildAndApply(c.getSource().getServer().getOverworld(), def);
+                            c.getSource().sendFeedback(() -> Text.literal("맵을 지었습니다: " + def.name()), false);
                             return 1;
-                        }))
+                        })))
                         .then(literal("spawn")
                                 .then(literal("a").executes(c -> spawn(c.getSource(), 0)))
                                 .then(literal("b").executes(c -> spawn(c.getSource(), 1))))
