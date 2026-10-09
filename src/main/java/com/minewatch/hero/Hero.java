@@ -16,6 +16,10 @@ public abstract class Hero {
     protected Hero(int numericId, String id) { this.numericId = numericId; this.id = id; }
 
     public Role role() { return Role.DAMAGE; }
+    /** 오버워치 단위 최대 체력/방어구/보호막. */
+    public double maxHealthOw() { return 150; }
+    public double maxArmor() { return 0; }
+    public double maxShield() { return 0; }
     public abstract double ultCost();
     /** 초당 자연 궁극기 충전량. */
     public double passiveUltPerSecond() { return 5.0; }

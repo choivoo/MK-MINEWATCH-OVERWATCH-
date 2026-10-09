@@ -26,4 +26,6 @@ public class TracerState extends HeroState {
     public int recallTicks = 0;
 
     public int meleeCooldown = 0;
+
+    @Override public boolean invulnerable() { return recalling; }
 }

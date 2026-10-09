@@ -11,6 +11,9 @@
     "main": ["com.minewatch.MineWatch"],
     "client": ["com.minewatch.client.MineWatchClient"]
   },
+  "mixins": [
+    { "config": "minewatch.client.mixins.json", "environment": "client" }
+  ],
   "depends": {
     "fabricloader": ">=0.16.0",
     "minecraft": "~1.21.1",

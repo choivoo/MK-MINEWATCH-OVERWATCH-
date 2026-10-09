@@ -1,5 +1,7 @@
 package com.minewatch.client;
 
+import com.minewatch.hero.Hero;
+import com.minewatch.net.PoolsPayload;
 import com.minewatch.net.StatePayload;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -9,6 +11,15 @@ import net.minecraft.client.render.RenderTickCounter;
 /** 오버워치 스타일 HUD: 체력, 탄약, 블링크 충전, 리콜, 궁극기. */
 final class OverwatchHud {
     private static final int WHITE = 0xFFFFFFFF, CYAN = 0xFF00D4FF, ORANGE = 0xFFF99E1A, DARK = 0xAA0B1220;
+
+    private static final int ARMOR = 0xFFF2C94C, SHIELD = 0xFF4DB8FF;
+
+    private static void drawRow(DrawContext g, int x, int y, int cw, int ch, int value, int max, int on, int off) {
+        for (int i = 0; i * 10 < max; i++) {
+            int x0 = x + i * cw;
+            g.fill(x0, y, x0 + cw - 1, y + ch, value > i * 10 ? on : off);
+        }
+    }
 
     static void render(DrawContext g, RenderTickCounter tick) {
         MinecraftClient mc = MinecraftClient.getInstance();
@@ -20,18 +31,20 @@ final class OverwatchHud {
         // 리콜 중 파란 화면 섬광
         if (s.recalling()) g.fill(0, 0, w, h, 0x4400AAFF);
 
-        // 체력 (150 HP 기준)
-        float max = mc.player.getMaxHealth();
-        float hp = mc.player.getHealth();
-        int hpOw = Math.round(hp * 150f / max);
-        int bx = 20, by = h - 36, bw = 150;
-        g.fill(bx - 2, by - 2, bx + bw + 2, by + 12, DARK);
-        for (int i = 0; i < 15; i++) {   // 10 HP 단위 칸
-            int x0 = bx + i * 10;
-            boolean on = hpOw > i * 10;
-            g.fill(x0, by, x0 + 9, by + 10, on ? WHITE : 0x55FFFFFF);
-        }
-        g.drawText(tr, String.valueOf(hpOw), bx, by - 14, WHITE, true);
+        // 체력 + 방어구(노랑) + 보호막(파랑). 칸 하나 = 10 HP, 최대치가 크면 칸이 좁아진다.
+        PoolsPayload pl = MineWatchClient.pools;
+        int hpOw = Math.round(mc.player.getHealth() * (float) Hero.HP_SCALE);
+        int maxOw = Math.round(mc.player.getMaxHealth() * (float) Hero.HP_SCALE);
+        int bx = 20, by = h - 36;
+        int widest = Math.max(maxOw, Math.max(pl.maxArmor(), pl.maxShield()));
+        int cw = Math.max(2, Math.min(10, 220 / Math.max(1, widest / 10)));
+        int rows = 1 + (pl.maxArmor() > 0 ? 1 : 0) + (pl.maxShield() > 0 ? 1 : 0);
+        g.fill(bx - 2, by - 2 - (rows - 1) * 7, bx + (widest / 10) * cw + 2, by + 12, DARK);
+        drawRow(g, bx, by, cw, 10, hpOw, maxOw, WHITE, 0x55FFFFFF);
+        int ry = by - 7;
+        if (pl.maxArmor() > 0) { drawRow(g, bx, ry, cw, 5, pl.armor(), pl.maxArmor(), ARMOR, 0x55F2C94C); ry -= 7; }
+        if (pl.maxShield() > 0) { drawRow(g, bx, ry, cw, 5, pl.shield(), pl.maxShield(), SHIELD, 0x554DB8FF); }
+        g.drawText(tr, String.valueOf(hpOw + pl.armor() + pl.shield()), bx, by - 14 - (rows - 1) * 7, WHITE, true);
 
         // 탄약 (우하단)
         String ammo = s.reloading() ? "RELOAD" : s.ammo() + " / " + s.maxAmmo();

@@ -8,6 +8,11 @@ public class HeroState {
     public InputPayload prevInput = InputPayload.EMPTY;
     /** 궁극기 포인트 (0 ~ hero.ultCost()). */
     public double ultPoints = 0;
+    public boolean ultReady = false;
+    public final Pools pools = new Pools();
+
+    /** 무적 상태(리콜 등)면 true. */
+    public boolean invulnerable() { return false; }
 
     public boolean pressed(int flag) { return input.has(flag) && !prevInput.has(flag); }
     public boolean held(int flag) { return input.has(flag); }

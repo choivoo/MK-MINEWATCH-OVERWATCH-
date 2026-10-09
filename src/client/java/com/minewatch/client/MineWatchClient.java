@@ -19,6 +19,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class MineWatchClient implements ClientModInitializer {
     public static volatile StatePayload state = StatePayload.NONE;
+    public static volatile com.minewatch.net.PoolsPayload pools = com.minewatch.net.PoolsPayload.NONE;
 
     static final String CAT = "category.minewatch";
     static final KeyBinding ABILITY1 = key("key.minewatch.ability1", GLFW.GLFW_KEY_LEFT_SHIFT); // 블링크
@@ -35,7 +36,8 @@ public class MineWatchClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(StatePayload.ID, (payload, ctx) -> state = payload);
-        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; MatchHud.reset(); });
+        ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.PoolsPayload.ID, (payload, ctx) -> pools = payload);
+        ClientPlayConnectionEvents.DISCONNECT.register((h, c) -> { state = StatePayload.NONE; pools = com.minewatch.net.PoolsPayload.NONE; MatchHud.reset(); });
 
         // 영웅 활성 중에는 기본 조작(웅크리기/버리기)과 충돌하지 않도록 먼저 소비
         ClientTickEvents.START_CLIENT_TICK.register(mc -> {

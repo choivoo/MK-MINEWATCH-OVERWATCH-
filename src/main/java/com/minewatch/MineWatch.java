@@ -42,6 +42,7 @@ public class MineWatch implements ModInitializer {
                 });
         PayloadTypeRegistry.playS2C().register(com.minewatch.net.MatchPayload.ID, com.minewatch.net.MatchPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(com.minewatch.net.KillFeedPayload.ID, com.minewatch.net.KillFeedPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(com.minewatch.net.PoolsPayload.ID, com.minewatch.net.PoolsPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(InputPayload.ID,
                 (payload, ctx) -> HeroManager.setInput(ctx.player(), payload));
 
@@ -49,6 +50,7 @@ public class MineWatch implements ModInitializer {
             HeroManager.tickAll(server.getPlayerManager().getPlayerList());
             PulseBombs.tick();
             MatchManager.tick(server);
+            com.minewatch.server.HealthPacks.tick(server);
         });
         ServerPlayConnectionEvents.DISCONNECT.register((h, s) -> { HeroManager.remove(h.player); MatchManager.onLeave(h.player); });
         ServerPlayConnectionEvents.JOIN.register((h, sender, s) -> MatchManager.onJoin(h.player));
@@ -66,7 +68,11 @@ public class MineWatch implements ModInitializer {
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, access, env) -> dispatcher.register(
-                literal("minewatch").then(literal("match").requires(s -> s.hasPermissionLevel(2))
+                literal("minewatch").then(literal("healthpack").requires(s -> s.hasPermissionLevel(2))
+                        .then(literal("large").executes(c -> { var s = c.getSource(); com.minewatch.server.HealthPacks.place(s.getWorld(), s.getPosition(), true); return 1; }))
+                        .then(literal("small").executes(c -> { var s = c.getSource(); com.minewatch.server.HealthPacks.place(s.getWorld(), s.getPosition(), false); return 1; }))
+                        .then(literal("clear").executes(c -> com.minewatch.server.HealthPacks.removeAll())))
+                .then(literal("match").requires(s -> s.hasPermissionLevel(2))
                         .then(literal("stop").executes(c -> { MatchManager.stop(c.getSource().getServer()); return 1; }))
                         .then(literal("start").executes(c -> { MatchManager.start(c.getSource().getServer(), 20, 300); return 1; })
                                 .then(argument("kills", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 200)).executes(c -> {
