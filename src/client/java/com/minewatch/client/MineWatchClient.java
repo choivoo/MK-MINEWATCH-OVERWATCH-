@@ -37,6 +37,7 @@ public class MineWatchClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        if (System.getProperty("minewatch.dev") != null) com.minewatch.client.dev.DevHarness.init();
         ClientPlayNetworking.registerGlobalReceiver(StatePayload.ID, (payload, ctx) -> state = payload);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.PoolsPayload.ID, (payload, ctx) -> pools = payload);
         ClientPlayNetworking.registerGlobalReceiver(com.minewatch.net.QueuePayload.ID, (payload, ctx) -> queue = payload);
@@ -71,6 +72,7 @@ public class MineWatchClient implements ClientModInitializer {
                 mc.player.setYaw(mc.player.getYaw() + (r.nextFloat() - 0.5f) * 0.4f);
             }
             float f = mc.player.input.movementForward, s = mc.player.input.movementSideways;
+            WeaponAnims.tick(mc, b);
             ClientPlayNetworking.send(new InputPayload(b, f, s));
         });
 
@@ -86,6 +88,18 @@ public class MineWatchClient implements ClientModInitializer {
         AttackEntityCallback.EVENT.register((p, w, h, e, hit) ->
                 state.heroId() != 0 && p.getMainHandStack().getItem() instanceof com.minewatch.HeroWeaponItem ? ActionResult.FAIL : ActionResult.PASS);
 
+        // GeckoLib 무기: 렌더러 연결(렌더러는 클라이언트 전용 클래스라 여기서 주입)
+        for (var item : net.minecraft.registry.Registries.ITEM) {
+            if (item instanceof com.minewatch.GeoWeaponItem g) {
+                g.renderProvider = new software.bernie.geckolib.animatable.client.GeoRenderProvider() {
+                    private com.minewatch.client.render.GeoWeaponRenderer renderer;
+                    @Override public net.minecraft.client.render.item.BuiltinModelItemRenderer getGeoItemRenderer() {
+                        if (renderer == null) renderer = new com.minewatch.client.render.GeoWeaponRenderer();
+                        return renderer;
+                    }
+                };
+            }
+        }
         net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry.register(com.minewatch.entity.ModEntities.BOT, com.minewatch.client.render.BotRenderer::new);
         HudRenderCallback.EVENT.register(OverwatchHud::render);
         HudRenderCallback.EVENT.register(MatchHud::render);

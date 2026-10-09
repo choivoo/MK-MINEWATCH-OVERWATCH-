@@ -8,6 +8,16 @@ group = project.maven_group
 base { archivesName = project.archives_base_name }
 
 loom {
+    runs {
+        // 개발용: 월드(run/saves/mw-dev)에 자동 입장해 장면별 스크린샷을 run/screenshots 에 저장한다.
+        devShots {
+            client()
+            ideConfigGenerated = false
+            vmArg "-Dminewatch.dev=1"
+            vmArg "-Dminewatch.only=${project.findProperty('only') ?: ''}"
+            programArgs "--quickPlaySingleplayer", "mw-dev", "--width", "1280", "--height", "720"
+        }
+    }
     splitEnvironmentSourceSets()
     mods {
         "minewatch" {

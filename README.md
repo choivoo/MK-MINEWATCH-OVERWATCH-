@@ -5,7 +5,7 @@
 
 ## 설치
 1. Fabric Loader 0.17 이상(1.21.1)과 [Fabric API](https://modrinth.com/mod/fabric-api)를 설치합니다.
-2. `minewatch-1.0.0.jar` 를 `mods` 폴더에 넣고 실행합니다.
+2. `minewatch-1.1.0.jar` 를 `mods` 폴더에 넣고 실행합니다.
 3. 월드에 들어가면 **로비 화면**이 자동으로 열립니다(`H` 키로 다시 열기).
 
 ## 플레이 방법
@@ -53,7 +53,7 @@
 
 ## 개발
 ```
-powershell -File scripts\gradle.ps1 build        # 빌드 + 단위 테스트  → build/libs/minewatch-1.0.0.jar
+powershell -File scripts\gradle.ps1 build        # 빌드 + 단위 테스트  → build/libs/minewatch-1.1.0.jar
 powershell -File scripts\gradle.ps1 runGametest  # 실제 서버로 맵/봇/영웅/퍽 검증
 powershell -File scripts\gradle.ps1 runClient
 ```

@@ -107,5 +107,8 @@ public class HeroSelectScreen extends Screen {
         return false;
     }
 
+    /** 개발용 스크린샷 하니스가 탭을 고르는 데 쓴다. */
+    public void devSetTab(Role r) { tab = r; }
+
     @Override public void close() { client.setScreen(parent); }
 }

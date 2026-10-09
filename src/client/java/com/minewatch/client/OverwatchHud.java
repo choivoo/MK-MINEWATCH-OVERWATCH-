@@ -39,7 +39,8 @@ final class OverwatchHud {
         int maxOw = Math.round(mc.player.getMaxHealth() * (float) Hero.HP_SCALE);
         int bx = 20, by = h - 36;
         int widest = Math.max(maxOw, Math.max(pl.maxArmor(), pl.maxShield()));
-        int cw = Math.max(2, Math.min(10, 220 / Math.max(1, widest / 10)));
+        int availW = Math.max(60, w / 2 - 70 - bx);              // 화면 중앙의 궁극기 링을 침범하지 않게
+        int cw = Math.max(2, Math.min(10, availW / Math.max(1, widest / 10)));
         int rows = 1 + (pl.maxArmor() > 0 ? 1 : 0) + (pl.maxShield() > 0 ? 1 : 0);
         g.fill(bx - 2, by - 2 - (rows - 1) * 7, bx + (widest / 10) * cw + 2, by + 12, DARK);
         drawRow(g, bx, by, cw, 10, hpOw, maxOw, WHITE, 0x55FFFFFF);
@@ -79,12 +80,11 @@ final class OverwatchHud {
                 if (slot.icon().equals("blink")) st = ready ? "ready" : "off";
                 abilityIcon(g, slot.icon(), st, ix, iy, isz, slot.active() ? WHITE : ready ? CYAN : 0xFF6A7C8C);
             } else {
-                // Seafle 스프라이트가 없는 능력: 이름 약자 아이콘
-                g.fill(ix - 1, iy - 1, ix + isz + 1, iy + isz + 1, slot.active() ? WHITE : ready ? CYAN : 0xFF6A7C8C);
+                // Seafle 스프라이트가 없는 능력: 생성한 흰색 아이콘을 상태 색으로 칠한다
+                int tintC = slot.active() ? WHITE : ready ? CYAN : 0xFF6A7C8C;
+                g.fill(ix - 1, iy - 1, ix + isz + 1, iy + isz + 1, tintC);
                 g.fill(ix, iy, ix + isz, iy + isz, DARK);
-                String nm = Text.translatable("ability.minewatch." + slot.icon()).getString();
-                String abbr = nm.length() > 2 ? nm.substring(0, 2) : nm;
-                g.drawCenteredTextWithShadow(tr, abbr, ix + isz / 2, iy + 10, ready ? WHITE : 0xFF8899AA);
+                Sprites.draw(g, Sprites.gui("ability/" + slot.icon()), ix + 3, iy + 3, isz - 6, isz - 6, 64, 64, tintC);
             }
             if (slot.cooldown() > 0 && slot.maxCharges() == 0) HudEffects.cooldownSweep(g, ix, iy, isz, slot.cooldown(), 0x99000000);
             if (slot.maxCharges() > 0) {
@@ -108,14 +108,20 @@ final class OverwatchHud {
 
     /** Seafle 능력 아이콘: 어두운 바탕(mul) 위에 밝은 형상(add)을 색조로 덧그린다. */
     private static void abilityIcon(DrawContext g, String ability, String state, int x, int y, int size, int tint) {
-        Sprites.draw(g, Sprites.gui("hud/hud_ab_" + state + "_" + ability + "_mul"), x, y, size, size, 162, 162, 0xB0101828);
-        Sprites.draw(g, Sprites.gui("hud/hud_ab_" + state + "_" + ability + "_add"), x, y, size, size, 162, 162, tint);
+        Sprites.mul(g, Sprites.gui("hud/hud_ab_" + state + "_" + ability + "_mul"), x, y, size, size, 162, 162, 0xFFFFFF);
+        Sprites.add(g, Sprites.gui("hud/hud_ab_" + state + "_" + ability + "_add"), x, y, size, size, 162, 162, dim(tint, 0.5f));
+    }
+
+    /** RGB 를 비율만큼 어둡게(가산 합성이 너무 밝아지지 않게). */
+    private static int dim(int argb, float f) {
+        int r = (int) (((argb >> 16) & 255) * f), gr = (int) (((argb >> 8) & 255) * f), b = (int) ((argb & 255) * f);
+        return (r << 16) | (gr << 8) | b;
     }
 
     private static void label(DrawContext g, String key, boolean ready, int x, int y, int w, int h, int texW) {
         String st = ready ? "ready" : "dim";
-        Sprites.draw(g, Sprites.gui("hud/hud_ab_lbl_" + key + "_" + st + "_mul"), x, y, w, h, texW, 58, 0xB0101828);
-        Sprites.draw(g, Sprites.gui("hud/hud_ab_lbl_" + key + "_" + st + "_add"), x, y, w, h, texW, 58, ready ? 0xFFFFFFFF : 0xFF8899AA);
+        Sprites.mul(g, Sprites.gui("hud/hud_ab_lbl_" + key + "_" + st + "_mul"), x, y, w, h, texW, 58, 0xFFFFFF);
+        Sprites.add(g, Sprites.gui("hud/hud_ab_lbl_" + key + "_" + st + "_add"), x, y, w, h, texW, 58, ready ? 0xFFFFFF : 0x8899AA);
     }
     private OverwatchHud() {}
 }

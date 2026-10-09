@@ -61,7 +61,7 @@ public class HomeScreen extends Screen {
         ctx.drawText(textRenderer, Text.translatable("screen.minewatch.tagline"), 38, height / 2 - 84, DIM, false);
 
         // 우측: 현재 선택 정보
-        int rx = width - 220, ry = height / 2 - 40;
+        int rx = Math.max(width - 220, 36 + 190 + 30), ry = height / 2 - 40;
         Hero h = HeroRegistry.get(MineWatchClient.state.heroId());
         ctx.drawText(textRenderer, Text.translatable("screen.minewatch.current_hero"), rx, ry, DIM, false);
         ctx.drawText(textRenderer, h == null ? Text.translatable("screen.minewatch.no_hero")
