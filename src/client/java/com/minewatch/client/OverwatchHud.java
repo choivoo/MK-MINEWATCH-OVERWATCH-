@@ -54,11 +54,14 @@ final class OverwatchHud {
         int iy = h - 52, isz = 28;
         int bxI = w / 2 + 40, rxI = bxI + isz + 6;
         // 블링크: 충전 개수 + 다음 충전 진행
-        icon(g, tr, bxI, iy, isz, "SHIFT", s.charges() > 0 ? CYAN : 0xFF446677);
+        abilityIcon(g, "blink", s.charges() > 0 ? "ready" : "off", bxI, iy, isz, s.charges() > 0 ? CYAN : 0xFF6A7C8C);
+        label(g, "shift", s.charges() > 0, bxI + isz / 2 - 24, iy + isz + 1, 48, 20, 136);
         if (s.charges() < s.maxCharges()) HudEffects.cooldownSweep(g, bxI, iy, isz, 1f - s.chargeProgress(), 0x99000000);
         g.drawCenteredTextWithShadow(tr, String.valueOf(s.charges()), bxI + isz / 2, iy + isz - 11, WHITE);
         // 리콜
-        icon(g, tr, rxI, iy, isz, "E", s.recalling() ? WHITE : CYAN);
+        abilityIcon(g, "recall", s.recalling() ? "active" : s.recallCooldown() > 0 ? "off" : "ready", rxI, iy, isz,
+                s.recalling() ? WHITE : s.recallCooldown() > 0 ? 0xFF6A7C8C : CYAN);
+        label(g, "e", s.recallCooldown() <= 0, rxI + isz / 2 - 10, iy + isz + 1, 20, 20, 58);
         HudEffects.cooldownSweep(g, rxI, iy, isz, s.recallCooldown(), 0x99000000);
 
         // 궁극기 원형 게이지 (하단 중앙)
@@ -72,10 +75,16 @@ final class OverwatchHud {
         HudEffects.renderDamageIndicators(g);
     }
 
-    private static void icon(DrawContext g, TextRenderer tr, int x, int y, int size, String key, int accent) {
-        g.fill(x - 1, y - 1, x + size + 1, y + size + 1, accent);
-        g.fill(x, y, x + size, y + size, DARK);
-        g.drawCenteredTextWithShadow(tr, key, x + size / 2, y + 4, WHITE);
+    /** Seafle 능력 아이콘: 어두운 바탕(mul) 위에 밝은 형상(add)을 색조로 덧그린다. */
+    private static void abilityIcon(DrawContext g, String ability, String state, int x, int y, int size, int tint) {
+        Sprites.draw(g, Sprites.gui("hud/hud_ab_" + state + "_" + ability + "_mul"), x, y, size, size, 162, 162, 0xB0101828);
+        Sprites.draw(g, Sprites.gui("hud/hud_ab_" + state + "_" + ability + "_add"), x, y, size, size, 162, 162, tint);
+    }
+
+    private static void label(DrawContext g, String key, boolean ready, int x, int y, int w, int h, int texW) {
+        String st = ready ? "ready" : "dim";
+        Sprites.draw(g, Sprites.gui("hud/hud_ab_lbl_" + key + "_" + st + "_mul"), x, y, w, h, texW, 58, 0xB0101828);
+        Sprites.draw(g, Sprites.gui("hud/hud_ab_lbl_" + key + "_" + st + "_add"), x, y, w, h, texW, 58, ready ? 0xFFFFFFFF : 0xFF8899AA);
     }
     private OverwatchHud() {}
 }

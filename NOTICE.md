@@ -11,3 +11,5 @@ inclusion of this copyright notice and permission notice in all copies or substa
 
 ## GeckoLib (MIT)
 애니메이션 라이브러리 GeckoLib(https://github.com/bernie-ra/GeckoLib)을 jar 에 포함(JiJ)하여 배포한다.
+
+이식된 GUI 텍스처: `assets/minewatch/textures/gui/{pick,hud}/` (Seafle Tracer 1.0.0 유래, MIT).
